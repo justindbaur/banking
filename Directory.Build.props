@@ -1,0 +1,16 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Banking.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <PluginsRoot>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'plugins'))</PluginsRoot>
+    <SourceRoot>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SourceRoot>
+  </PropertyGroup>
+
+</Project>

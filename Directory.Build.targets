@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ProjectReference Include="@(Plugin->Distinct()->'$(PluginsRoot)\%(Identity)\src\%(Identity)\%(Identity).csproj')" />
+  </ItemGroup>
+</Project>

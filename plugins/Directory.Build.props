@@ -1,0 +1,66 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <RootNamespace>Banking.Plugin.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <!-- All projects in this directory should default to being a plugin project but it can be opted out of -->
+
+    <IsPluginTestProject Condition=" '$(IsPluginTestProject)' == '' AND 
+      $(MSBuildProjectName.EndsWith('Tests'))">true</IsPluginTestProject>
+    <IsPluginProject Condition="'$(IsPluginTestProject)' != 'true' AND '$(IsPluginProject)' == ''">true</IsPluginProject>
+  </PropertyGroup>
+
+  <!-- All plugins will need to implement the Abstractions project -->
+  <ItemGroup Condition="'$(IsPluginProject)' == 'true'">
+    <ProjectReference Include="$(SourceRoot)\Abstractions\Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <Using Include="Banking.Abstractions" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(IsPluginTestProject)' == 'true'">
+    <!-- Test project packages -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.18.4" />
+
+    <!-- Global using -->
+    <Using Include="Xunit" />
+    <!-- This is a shared test that all plugins must pass -->
+    <Compile Include="$(PluginsRoot)\shared\RegisterTests.cs" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsPluginTestProject)' == 'true'">
+    <IsPackable Condition="'$(IsPackable)' == ''">false</IsPackable>
+  </PropertyGroup>
+
+  <!-- 
+    Easy ways for a plugin to request a reference, while we can still control the version
+  -->
+  <PropertyGroup>
+    <UseCsv Condition="'$(UseCsv)' == ''">false</UseCsv>
+    <UseHttp Condition="'$(UseHttp)' == ''">false</UseHttp>
+    <UseOptions Condition="'$(UseOptions)' == ''">false</UseOptions>
+    <UseOtp Condition="'$(UseOtp)' == ''">false</UseOtp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Condition="'$(UseCsv)' == 'true'" Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Condition="'$(UseHttp)' == 'true'" Include="Microsoft.Extensions.Http" Version="7.0.0" />
+    <PackageReference Condition="'$(UseOptions)' == 'true'" Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Condition="'$(UseOtp)' == 'true'" Include="Otp.NET" Version="1.3.0" />
+  </ItemGroup>
+</Project>
