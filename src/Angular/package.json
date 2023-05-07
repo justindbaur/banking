@@ -2,6 +2,7 @@
   "name": "banking",
   "version": "0.0.0",
   "scripts": {
+    "initial-setup": "cp ./src/environments/environment_example.development.ts ./src/environments/environment.development.ts",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
