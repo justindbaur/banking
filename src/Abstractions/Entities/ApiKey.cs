@@ -7,5 +7,5 @@ public record ApiKey
     public required string[] Scopes { get; init; }
     public required DateTime CreatedDate { get; init; }
     public DateTime? ExpirationDate { get; init; }
-    public DateTime? LastUsedDate { get; init; }
+    public DateTime? LastUsedDate { get; set; }
 }

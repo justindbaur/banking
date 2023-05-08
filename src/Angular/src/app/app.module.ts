@@ -20,7 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { LoginComponent } from './login/login.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { HttpClientModule } from '@angular/common/http';
-import { Client } from '@passwordlessdev/passwordless-client';
+import { Client } from 'https://cdn.passwordless.dev/dist/1.1.0/esm/passwordless.min.mjs';
 import { ApiService } from './services/api.service';
 import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
 import { environment } from '../environments/environment';

@@ -23,6 +23,7 @@ export class LoginComponent {
 
   public async login() {
     const token = await this.client.signinWithAlias(this.form.value.username!);
+    console.log(token);
 
     await this.apiService.login(token);
 
