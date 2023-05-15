@@ -26,8 +26,8 @@ public class GuidelineTransactionSourceTests
         testClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         testClient.DefaultRequestHeaders.Add("X-GL-CLIENT", "web");
         testClient.DefaultRequestHeaders.Add("X-JS-UTC-OFFSET", "-300");
-        testClient.DefaultRequestHeaders.Add("X-GL-UUID", "");
-        testClient.DefaultRequestHeaders.Add("Cookie", "");
+        // testClient.DefaultRequestHeaders.Add("X-GL-UUID", "");
+        // testClient.DefaultRequestHeaders.Add("Cookie", "");
 
         _mockHttpClientFactory = new Mock<IHttpClientFactory>();
 
