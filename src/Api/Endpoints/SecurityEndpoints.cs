@@ -153,7 +153,7 @@ public static class SecurityEndpoints
         })
             .RequireAuthorization(policy =>
             {
-                policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme, )
+                
             })
             .RequireCors("AllowCredentials");
     }
