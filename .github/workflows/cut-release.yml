@@ -24,6 +24,7 @@ jobs:
             const ref = `refs/heads/${branchName}`;
             const sha = context.sha;
             const repo = context.repo;
+            console.log(`Creating branch ${branchName} at ${sha}`, JSON.stringify(context, null, 2))
             github.rest.git.createRef({
               ...repo,
               ref,
