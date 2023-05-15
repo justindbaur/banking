@@ -13,6 +13,8 @@ on:
 jobs:
   create-branch:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Create Branch
         uses: actions/github-script@v6
@@ -24,9 +26,9 @@ jobs:
             const ref = `refs/heads/${branchName}`;
             const sha = context.sha;
             const repo = context.repo;
-            console.log(`Creating branch ${branchName} at ${sha}`, JSON.stringify(context, null, 2))
             github.rest.git.createRef({
-              ...repo,
+              owner: context.repository.owner.login,
+              repo: context.repository.name,
               ref,
               sha,
             });
