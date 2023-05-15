@@ -1,0 +1,32 @@
+name: 'Cut Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      majorVersion:
+        description: 'Major version'
+        required: true
+      minorVersion:
+        description: 'Minor version'
+        required: true
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Branch
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const majorVersion = ${{ github.event.inputs.majorVersion }};
+            const minorVersion = ${{ github.event.inputs.minorVersion }};
+            const branchName = `release/${majorVersion}.${minorVersion}`;
+            const ref = `refs/heads/${branchName}`;
+            const sha = github.context.sha;
+            const repo = github.context.repo;
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+            octokit.git.createRef({
+              ...repo,
+              ref,
+              sha,
+            });
