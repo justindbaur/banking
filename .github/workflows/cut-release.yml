@@ -22,10 +22,9 @@ jobs:
             const minorVersion = ${{ github.event.inputs.minorVersion }};
             const branchName = `release/${majorVersion}.${minorVersion}`;
             const ref = `refs/heads/${branchName}`;
-            const sha = github.context.sha;
-            const repo = github.context.repo;
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            octokit.git.createRef({
+            const sha = context.sha;
+            const repo = context.repo;
+            github.rest.git.createRef({
               ...repo,
               ref,
               sha,
