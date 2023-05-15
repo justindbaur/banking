@@ -13,8 +13,7 @@ on:
 jobs:
   create-branch:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
       - name: Create Branch
         uses: actions/github-script@v6
@@ -31,3 +30,4 @@ jobs:
               ref,
               sha,
             });
+          debug: true
