@@ -25,6 +25,7 @@ jobs:
             const branchName = `release/${majorVersion}.${minorVersion}`;
             const ref = `refs/heads/${branchName}`;
             const sha = context.sha;
+            console.debug(`Creating branch ${branchName} at ${sha}`, context);
             github.rest.git.createRef({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
