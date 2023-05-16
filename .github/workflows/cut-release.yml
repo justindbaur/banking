@@ -8,11 +8,13 @@ on:
         required: true
       minorVersion:
         description: 'Minor version'
-        required: true
+        required: false
+        default: '0'
 
 jobs:
   create-branch:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Create Branch
         uses: actions/github-script@v6
@@ -23,9 +25,9 @@ jobs:
             const branchName = `release/${majorVersion}.${minorVersion}`;
             const ref = `refs/heads/${branchName}`;
             const sha = context.sha;
-            const repo = context.repo;
             github.rest.git.createRef({
-              ...repo,
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
               ref,
               sha,
             });
