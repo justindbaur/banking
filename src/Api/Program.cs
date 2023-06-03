@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Banking.Abstractions;
+using Banking.Abstractions.Entities;
 using Banking.Api.Authentication;
 using Banking.Api.Authorization;
 using Banking.Api.Endpoints;
@@ -9,6 +10,7 @@ using Banking.Storage;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -27,25 +29,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     })
     .AddJwtBearer(options =>
     {
-        options.Events.OnTokenValidated = async context =>
+        options.Events = new JwtBearerEvents
         {
-            var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
-            if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+            OnTokenValidated = async context =>
             {
-                context.Fail("Missing required property");
-                return;
-            }
+                var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
+                if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+                {
+                    context.Fail("Missing required property");
+                    return;
+                }
 
-            var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
-            var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
-            if (foundKey == null)
-            {
-                context.Fail("Key has expired.");
-                return;
-            }
+                var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
+                var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
+                if (foundKey == null)
+                {
+                    context.Fail("Key has expired.");
+                    return;
+                }
 
-            foundKey.LastUsedDate = DateTime.UtcNow;
-            await bankingContext.SaveChangesAsync();
+                foundKey.LastUsedDate = DateTime.UtcNow;
+                await bankingContext.SaveChangesAsync();
+            },
         };
     })
     .AddScheme<AuthenticationSchemeOptions, ManagementKeyHandler>("ManagementKey", "Management Key", null);
@@ -58,20 +63,25 @@ builder.Services.AddAuthorization(b =>
     b.AddScopePolicy(Scopes.Sync);
 });
 
-builder.Services.AddHttpClient("Passwordless", (services, client) =>
-{
-    var config = services.GetRequiredService<IConfiguration>();
+builder.Services.AddPasswordless(builder.Configuration.GetSection("Passwordless"));
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomUserClaimsPrincipalFactory>();
+builder.Services.AddScoped<IUserStore<User>, UserStore>();
 
-    var passwordlessSection = config.GetRequiredSection("Passwordless");
-    var apiUrl = passwordlessSection.GetValue<string>("ApiUrl")
-        ?? throw new InvalidOperationException("Missing Passwordless:ApiUrl in config");
 
-    var apiSecret = passwordlessSection.GetValue<string>("ApiSecret")
-        ?? throw new InvalidOperationException("Missing Passwordless:ApiSecret in config");
+// builder.Services.AddHttpClient("Passwordless-1", (services, client) =>
+// {
+//     var config = services.GetRequiredService<IConfiguration>();
 
-    client.BaseAddress = new Uri(apiUrl);
-    client.DefaultRequestHeaders.Add("ApiSecret", apiSecret);
-});
+//     var passwordlessSection = config.GetRequiredSection("Passwordless");
+//     var apiUrl = passwordlessSection.GetValue<string>("ApiUrl")
+//         ?? throw new InvalidOperationException("Missing Passwordless:ApiUrl in config");
+
+//     var apiSecret = passwordlessSection.GetValue<string>("ApiSecret")
+//         ?? throw new InvalidOperationException("Missing Passwordless:ApiSecret in config");
+
+//     client.BaseAddress = new Uri(apiUrl);
+//     client.DefaultRequestHeaders.Add("ApiSecret", apiSecret);
+// });
 
 builder.Services.AddConsumersCreditUnion(builder.Configuration.GetSection("Consumers"));
 builder.Services.AddGuideline(builder.Configuration.GetSection("Guideline"));
@@ -149,6 +159,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.MapGet("/", async (BankingContext dbContext) =>
+    {
+        await dbContext.Database.MigrateAsync();
+        return "Ran migrations for you";
+    });
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -230,6 +246,9 @@ app.MapGet("/accounts", async (BankingContext bankingContext, CancellationToken 
 
     return ListResponse.Create(accounts);
 });
+
+app.MapPasswordless<User>()
+    .RequireCors("AllowCredentials");
 
 app.MapSecurityEndpoints();
 

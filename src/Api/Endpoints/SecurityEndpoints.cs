@@ -18,74 +18,74 @@ public static class SecurityEndpoints
 {
     public static void MapSecurityEndpoints(this WebApplication app)
     {
-        app.MapPost("/passwordless-register", async (CreateTokenRequest request, IHttpClientFactory clientFactory, BankingContext bankingContext) =>
-        {
-            var client = clientFactory.CreateClient("Passwordless");
-            var userId = Guid.NewGuid();
+        // app.MapPost("/passwordless-register", async (CreateTokenRequest request, IHttpClientFactory clientFactory, BankingContext bankingContext) =>
+        // {
+        //     var client = clientFactory.CreateClient("Passwordless");
+        //     var userId = Guid.NewGuid();
 
-            var response = await client.PostAsJsonAsync("/register/token", new
-            {
-                userId,
-                displayName = request.FullName,
-                username = request.Username,
-            });
+        //     var response = await client.PostAsJsonAsync("/register/token", new
+        //     {
+        //         userId,
+        //         displayName = request.FullName,
+        //         username = request.Username,
+        //     });
 
-            response.EnsureSuccessStatusCode();
+        //     response.EnsureSuccessStatusCode();
 
-            var token = await response.Content.ReadAsStringAsync();
+        //     var token = await response.Content.ReadAsStringAsync();
 
-            response = await client.PostAsJsonAsync("/alias", new
-            {
-                UserId = userId,
-                aliases = new string[] { request.Username },
-            });
+        //     response = await client.PostAsJsonAsync("/alias", new
+        //     {
+        //         UserId = userId,
+        //         aliases = new string[] { request.Username },
+        //     });
 
-            response.EnsureSuccessStatusCode();
+        //     response.EnsureSuccessStatusCode();
 
-            bankingContext.Users.Add(new User
-            {
-                Id = userId,
-            });
+        //     bankingContext.Users.Add(new User
+        //     {
+        //         Id = userId,
+        //     });
 
-            await bankingContext.SaveChangesAsync();
+        //     await bankingContext.SaveChangesAsync();
 
-            return Ok(new { token });
-        })
-            .RequireCors("Default");
+        //     return Ok(new { token });
+        // })
+        //     .RequireCors("Default");
 
-        app.MapPost("/passwordless-login", async (IHttpClientFactory httpClientFactory, HttpContext context, LoginTokenRequest request) =>
-        {
-            var client = httpClientFactory.CreateClient("Passwordless");
+        // app.MapPost("/passwordless-login", async (IHttpClientFactory httpClientFactory, HttpContext context, LoginTokenRequest request) =>
+        // {
+        //     var client = httpClientFactory.CreateClient("Passwordless");
 
-            var response = await client.PostAsJsonAsync("/signin/verify", new
-            {
-                token = request.Token,
-            });
+        //     var response = await client.PostAsJsonAsync("/signin/verify", new
+        //     {
+        //         token = request.Token,
+        //     });
 
-            using var jsonResponse = await response.Content.ReadFromJsonAsync<JsonDocument>();
+        //     using var jsonResponse = await response.Content.ReadFromJsonAsync<JsonDocument>();
 
-            if (jsonResponse == null)
-            {
-                return BadRequest();
-            }
+        //     if (jsonResponse == null)
+        //     {
+        //         return BadRequest();
+        //     }
 
-            var root = jsonResponse.RootElement;
+        //     var root = jsonResponse.RootElement;
 
-            if (!root.TryGetProperty("success", out var successElement) || !successElement.GetBoolean())
-            {
-                return BadRequest();
-            }
+        //     if (!root.TryGetProperty("success", out var successElement) || !successElement.GetBoolean())
+        //     {
+        //         return BadRequest();
+        //     }
 
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new Claim(JwtClaimTypes.Subject, root.GetProperty("userId").GetString()!),
-                new Claim(JwtClaimTypes.Role, "admin"),
-            }, "passwordless", null, JwtClaimTypes.Role));
+        //     var principal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        //     {
+        //         new Claim(JwtClaimTypes.Subject, root.GetProperty("userId").GetString()!),
+        //         new Claim(JwtClaimTypes.Role, "admin"),
+        //     }, "passwordless", null, JwtClaimTypes.Role));
 
-            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-            return NoContent();
-        })
-            .RequireCors("AllowCredentials");
+        //     await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        //     return NoContent();
+        // })
+        //     .RequireCors("AllowCredentials");
 
         app.MapPost("/jwt", async (CreateJwtTokenRequest request, BankingContext bankingContext, HttpContext context) =>
         {
@@ -153,7 +153,9 @@ public static class SecurityEndpoints
         })
             .RequireAuthorization(policy =>
             {
-                
+                policy.RequireAuthenticatedUser();
+
+                // TODO: Add more requirements
             })
             .RequireCors("AllowCredentials");
     }

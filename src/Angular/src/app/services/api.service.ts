@@ -36,20 +36,18 @@ export class ApiService {
       .pipe(map(j => j.map(k => new ApiKey(k))));
   }
 
-  async login(token: string): Promise<void> {
-    await firstValueFrom(this.httpClient.post(
+  login(token: string) {
+    return this.httpClient.post<void>(
       `${this.baseUrl}/passwordless-login`, {
       token
     }, {
       withCredentials: true,
-    }));
+    });
   }
 
-  async register(loginRequest: { fullName: string, username: string, nickname: string }): Promise<string> {
-    return await firstValueFrom(this.httpClient.post(
+  register(loginRequest: { username: string, nickname: string }): Observable<{ token: string}> {
+    return this.httpClient.post<{ token: string }>(
       `${this.baseUrl}/passwordless-register`,
-      loginRequest, {
-        responseType: 'text'
-      }));
+      loginRequest);
   }
 }
