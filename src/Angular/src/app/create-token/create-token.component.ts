@@ -15,22 +15,26 @@ export class CreateTokenComponent {
     nickname: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
   });
-  private baseUrl = "http://localhost:5026";
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private client: Client,
     private apiService: ApiService) {
-
   }
 
-  public async register() {
-    const token = await this.apiService.register({
-      fullName: this.form.value.fullName!,
+  public register() {
+    this.apiService.register({
       nickname: this.form.value.nickname!,
       username: this.form.value.username!,
-    });
+    })
+      .subscribe(r => {
+        const { token } = r;
+        this.continueLogin(token);
+      });
+  }
+
+  private async continueLogin(token: string) {
     try {
       await this.client.register(token, this.form.value.nickname!);
       await this.router.navigate(['/login']);

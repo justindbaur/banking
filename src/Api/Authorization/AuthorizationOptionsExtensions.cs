@@ -17,9 +17,9 @@ public static class AuthorizationOptionsExtensions
         });
     }
 
-    public static AuthorizationPolicyBuilder RequireScope(this AuthorizationPolicyBuilder policy, string scope)
+    public static AuthorizationPolicyBuilder RequireScope(this AuthorizationPolicyBuilder policy, params string[] scopes)
     {
-        return policy.RequireClaim(JwtClaimTypes.Scope, scope);
+        return policy.RequireClaim(JwtClaimTypes.Scope, scopes);
     }
 
     public static AuthorizationPolicyBuilder AddManagementSchemes(this AuthorizationPolicyBuilder policy)

@@ -64,5 +64,6 @@ public class GuidelineTransactionSourceTests
         // var accounts = await _sut.GetAccountsAsync(CancellationToken.None);
 
         // Assert.NotNull(_sut);
+        await Task.CompletedTask;
     }
 }
