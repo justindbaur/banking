@@ -41,6 +41,7 @@ export class ApiService {
       `${this.baseUrl}/passwordless-login`, {
       token
     }, {
+      // TODO: Does this actually need credentials? only to set the cookie?
       withCredentials: true,
     });
   }

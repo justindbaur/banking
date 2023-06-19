@@ -12,7 +12,8 @@ public class CustomUserClaimsPrincipalFactory : IUserClaimsPrincipalFactory<User
         return Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(JwtClaimTypes.Subject, user.Id.ToString()),
-            new Claim(JwtClaimTypes.Role, "admin"),
-        }, authenticationType: "passwordless", nameType: null, roleType: JwtClaimTypes.Role)));
+            new Claim(JwtClaimTypes.Name, user.Username),
+            new Claim(JwtClaimTypes.Scope, "admin"),
+        }, authenticationType: "passwordless", nameType: JwtClaimTypes.Name, roleType: JwtClaimTypes.Role)));
     }
 }

@@ -9,26 +9,38 @@ using Banking.Api.Services.Implementations;
 using Banking.Storage;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Passwordless.AspNetCore;
+using Passwordless.AspNetCore.Services;
 using static Microsoft.AspNetCore.Http.Results;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options => 
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
     .AddCookie(b =>
     {
         b.Cookie.Name = "Banking";
+
+        b.Cookie.SameSite = SameSiteMode.None;
+        b.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 
         b.SlidingExpiration = false;
         b.ExpireTimeSpan = TimeSpan.FromHours(1);
     })
     .AddJwtBearer(options =>
     {
+        options.ForwardChallenge = CookieAuthenticationDefaults.AuthenticationScheme;
+
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async context =>
@@ -63,9 +75,12 @@ builder.Services.AddAuthorization(b =>
     b.AddScopePolicy(Scopes.Sync);
 });
 
-builder.Services.AddPasswordless(builder.Configuration.GetSection("Passwordless"));
+builder.Services.AddPasswordless<User>(builder.Configuration.GetRequiredSection("Passwordless"));
+
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomUserClaimsPrincipalFactory>();
 builder.Services.AddScoped<IUserStore<User>, UserStore>();
+
+builder.Services.AddScoped<IRegisterService<CustomRegisterRequest>, CustomRegisterService>();
 
 
 // builder.Services.AddHttpClient("Passwordless-1", (services, client) =>
@@ -152,6 +167,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.SupportNonNullableReferenceTypes();
 });
 
 var app = builder.Build();
@@ -247,7 +264,10 @@ app.MapGet("/accounts", async (BankingContext bankingContext, CancellationToken 
     return ListResponse.Create(accounts);
 });
 
-app.MapPasswordless<User>()
+app.MapPasswordless<CustomRegisterRequest, PasswordlessLoginRequest, PasswordlessAddCredentialRequest>(new PasswordlessEndpointOptions
+{
+    AddCredentialPath = null,
+})
     .RequireCors("AllowCredentials");
 
 app.MapSecurityEndpoints();

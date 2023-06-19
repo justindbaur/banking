@@ -54,7 +54,12 @@ public sealed class UserStore : IUserStore<User>
             throw new InvalidOperationException("userId is not in a valid format");
         }
 
-        return await _bankingContext.Users.Where(u => u.Id == actualUserId)
+        return await FindByIdCoreAsync(actualUserId, cancellationToken);
+    }
+
+    private async Task<User?> FindByIdCoreAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _bankingContext.Users.Where(u => u.Id == userId)
             .SingleOrDefaultAsync(cancellationToken);
     }
 
@@ -75,7 +80,7 @@ public sealed class UserStore : IUserStore<User>
 
     public Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken)
     {
-        return Task.FromResult<string?>(null);
+        return Task.FromResult<string?>(user.Username);
     }
 
     public Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
@@ -85,12 +90,32 @@ public sealed class UserStore : IUserStore<User>
 
     public Task SetUserNameAsync(User user, string? userName, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentException.ThrowIfNullOrEmpty(userName);
+
+        user.Username = userName;
         return Task.CompletedTask;
     }
 
-    public Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
+    public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
     {
         // Nothing to actually update, we only track an id
-        return Task.FromResult(IdentityResult.Success);
+        var existingUser = await FindByIdCoreAsync(user.Id, cancellationToken);
+
+        if (existingUser is null)
+        {
+            return IdentityResult.Failed(new IdentityError
+            {
+                Code = "not_found",
+                Description = "User with requested id was not found.",
+            });
+        }
+
+        existingUser.Username = user.Username;
+
+        _bankingContext.Users.Update(existingUser);
+        await _bankingContext.SaveChangesAsync(cancellationToken);
+
+        return IdentityResult.Success;
     }
 }

@@ -31,8 +31,9 @@ export class LoginComponent {
 
     console.log(token);
 
-    await this.apiService.login(token);
-
-    this.router.navigate(['/api-keys']);
+    this.apiService.login(token)
+      .subscribe(_ => {
+        this.router.navigate(['/api-keys']);
+      });
   }
 }
