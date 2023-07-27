@@ -27,25 +27,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     })
     .AddJwtBearer(options =>
     {
-        options.Events.OnTokenValidated = async context =>
+        options.Events = new JwtBearerEvents
         {
-            var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
-            if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+            OnTokenValidated = async context =>
             {
-                context.Fail("Missing required property");
-                return;
-            }
+                var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
+                if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+                {
+                    context.Fail("Missing required property");
+                    return;
+                }
 
-            var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
-            var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
-            if (foundKey == null)
-            {
-                context.Fail("Key has expired.");
-                return;
-            }
+                var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
+                var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
+                if (foundKey == null)
+                {
+                    context.Fail("Key has expired.");
+                    return;
+                }
 
-            foundKey.LastUsedDate = DateTime.UtcNow;
-            await bankingContext.SaveChangesAsync();
+                foundKey.LastUsedDate = DateTime.UtcNow;
+                await bankingContext.SaveChangesAsync();
+            }, 
         };
     })
     .AddScheme<AuthenticationSchemeOptions, ManagementKeyHandler>("ManagementKey", "Management Key", null);
@@ -151,6 +154,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.MapGet("/config", (IConfiguration configuration) => ((IConfigurationRoot)configuration).GetDebugView());
 }
 
 app.UseHttpsRedirection();

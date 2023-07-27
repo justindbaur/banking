@@ -151,10 +151,7 @@ public static class SecurityEndpoints
             var keys = await context.ApiKeys.ToListAsync();
             return Ok(ListResponse.Create(keys));
         })
-            .RequireAuthorization(policy =>
-            {
-                
-            })
+            // TODO: Add required scopes
             .RequireCors("AllowCredentials");
     }
 }

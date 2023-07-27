@@ -1,0 +1,20 @@
+---
+version: '3.8'
+
+services:
+  banking-api:
+    env_file:
+      - settings.env
+    image: banking-api
+    ports:
+      - 9000:80
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "banking-api", "service": "webapp"}]'
+  dd-agent:
+    env_file:
+      - dd_settings.env
+    build: datadog
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
