@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Banking.Abstractions;
+using Banking.Abstractions.Entities;
 using Banking.Api.Authentication;
 using Banking.Api.Authorization;
 using Banking.Api.Endpoints;
@@ -8,44 +9,60 @@ using Banking.Api.Services.Implementations;
 using Banking.Storage;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Passwordless.AspNetCore;
+using Passwordless.AspNetCore.Services;
 using static Microsoft.AspNetCore.Http.Results;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options => 
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
     .AddCookie(b =>
     {
         b.Cookie.Name = "Banking";
+
+        b.Cookie.SameSite = SameSiteMode.None;
+        b.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 
         b.SlidingExpiration = false;
         b.ExpireTimeSpan = TimeSpan.FromHours(1);
     })
     .AddJwtBearer(options =>
     {
-        options.Events.OnTokenValidated = async context =>
+        options.ForwardChallenge = CookieAuthenticationDefaults.AuthenticationScheme;
+
+        options.Events = new JwtBearerEvents
         {
-            var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
-            if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+            OnTokenValidated = async context =>
             {
-                context.Fail("Missing required property");
-                return;
-            }
+                var apiKeyIdString = context.Principal?.FindFirstValue(JwtClaimTypes.JwtId);
+                if (string.IsNullOrEmpty(apiKeyIdString) || !Guid.TryParse(apiKeyIdString, out var apiKeyId))
+                {
+                    context.Fail("Missing required property");
+                    return;
+                }
 
-            var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
-            var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
-            if (foundKey == null)
-            {
-                context.Fail("Key has expired.");
-                return;
-            }
+                var bankingContext = context.HttpContext.RequestServices.GetRequiredService<BankingContext>();
+                var foundKey = await bankingContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyId);
+                if (foundKey == null)
+                {
+                    context.Fail("Key has expired.");
+                    return;
+                }
 
-            foundKey.LastUsedDate = DateTime.UtcNow;
-            await bankingContext.SaveChangesAsync();
+                foundKey.LastUsedDate = DateTime.UtcNow;
+                await bankingContext.SaveChangesAsync();
+            },
         };
     })
     .AddScheme<AuthenticationSchemeOptions, ManagementKeyHandler>("ManagementKey", "Management Key", null);
@@ -58,20 +75,28 @@ builder.Services.AddAuthorization(b =>
     b.AddScopePolicy(Scopes.Sync);
 });
 
-builder.Services.AddHttpClient("Passwordless", (services, client) =>
-{
-    var config = services.GetRequiredService<IConfiguration>();
+builder.Services.AddPasswordless<User>(builder.Configuration.GetRequiredSection("Passwordless"));
 
-    var passwordlessSection = config.GetRequiredSection("Passwordless");
-    var apiUrl = passwordlessSection.GetValue<string>("ApiUrl")
-        ?? throw new InvalidOperationException("Missing Passwordless:ApiUrl in config");
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomUserClaimsPrincipalFactory>();
+builder.Services.AddScoped<IUserStore<User>, UserStore>();
 
-    var apiSecret = passwordlessSection.GetValue<string>("ApiSecret")
-        ?? throw new InvalidOperationException("Missing Passwordless:ApiSecret in config");
+builder.Services.AddScoped<IRegisterService<CustomRegisterRequest>, CustomRegisterService>();
 
-    client.BaseAddress = new Uri(apiUrl);
-    client.DefaultRequestHeaders.Add("ApiSecret", apiSecret);
-});
+
+// builder.Services.AddHttpClient("Passwordless-1", (services, client) =>
+// {
+//     var config = services.GetRequiredService<IConfiguration>();
+
+//     var passwordlessSection = config.GetRequiredSection("Passwordless");
+//     var apiUrl = passwordlessSection.GetValue<string>("ApiUrl")
+//         ?? throw new InvalidOperationException("Missing Passwordless:ApiUrl in config");
+
+//     var apiSecret = passwordlessSection.GetValue<string>("ApiSecret")
+//         ?? throw new InvalidOperationException("Missing Passwordless:ApiSecret in config");
+
+//     client.BaseAddress = new Uri(apiUrl);
+//     client.DefaultRequestHeaders.Add("ApiSecret", apiSecret);
+// });
 
 builder.Services.AddConsumersCreditUnion(builder.Configuration.GetSection("Consumers"));
 builder.Services.AddGuideline(builder.Configuration.GetSection("Guideline"));
@@ -142,6 +167,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.SupportNonNullableReferenceTypes();
 });
 
 var app = builder.Build();
@@ -149,6 +176,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.MapGet("/", async (BankingContext dbContext) =>
+    {
+        await dbContext.Database.MigrateAsync();
+        return "Ran migrations for you";
+    });
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -230,6 +263,12 @@ app.MapGet("/accounts", async (BankingContext bankingContext, CancellationToken 
 
     return ListResponse.Create(accounts);
 });
+
+app.MapPasswordless<CustomRegisterRequest, PasswordlessLoginRequest, PasswordlessAddCredentialRequest>(new PasswordlessEndpointOptions
+{
+    AddCredentialPath = null,
+})
+    .RequireCors("AllowCredentials");
 
 app.MapSecurityEndpoints();
 
