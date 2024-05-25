@@ -3,15 +3,15 @@ using System.Reflection;
 using Banking.Plugin.Guideline;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Moq;
+using Pretender;
 
 namespace Guideline.Tests;
 
 public class GuidelineTransactionSourceTests
 {
     public IConfiguration Configuration { get; }
-    private readonly Mock<GuidelineOptions> _mockOptions;
-    private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
+    private readonly Pretend<GuidelineOptions> _mockOptions;
+    private readonly Pretend<IHttpClientFactory> _mockHttpClientFactory;
 
     private readonly GuidelineTransactionSource _sut;
 
@@ -29,18 +29,18 @@ public class GuidelineTransactionSourceTests
         // testClient.DefaultRequestHeaders.Add("X-GL-UUID", "");
         // testClient.DefaultRequestHeaders.Add("Cookie", "");
 
-        _mockHttpClientFactory = new Mock<IHttpClientFactory>();
+        _mockHttpClientFactory = Pretend.That<IHttpClientFactory>();
 
         _mockHttpClientFactory
             .Setup(f => f.CreateClient(Constants.ClientName))
             .Returns(testClient);
-        _mockOptions = new Mock<GuidelineOptions>();
+        _mockOptions = Pretend.That<GuidelineOptions>();
 
         Configuration = new ConfigurationBuilder()
             .AddUserSecrets(Assembly.Load("Api"))
             .Build().GetSection("Guideline");
 
-        _sut = new GuidelineTransactionSource(_mockHttpClientFactory.Object, Options.Create(_mockOptions.Object));
+        _sut = new GuidelineTransactionSource(_mockHttpClientFactory.Create(), Options.Create(_mockOptions.Create()));
     }
 
     [Fact]
