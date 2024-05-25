@@ -12,7 +12,6 @@ import { lastValueFrom } from 'rxjs';
 })
 export class CreateTokenComponent {
   form = this.fb.nonNullable.group({
-    fullName: new FormControl('', Validators.required),
     nickname: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
   });
@@ -27,7 +26,6 @@ export class CreateTokenComponent {
   public async register() {
     const token = await lastValueFrom(
       this.apiService.register$({
-        fullName: this.form.value.fullName!,
         nickname: this.form.value.nickname!,
         username: this.form.value.username!,
       })

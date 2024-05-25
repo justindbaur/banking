@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { BASE_URL } from '../app.module';
-import { Observable, firstValueFrom, map } from 'rxjs';
+import { NEVER, Observable, firstValueFrom, map } from 'rxjs';
 import { Jsonify } from 'type-fest';
 
 export class ApiKey {
@@ -26,6 +26,8 @@ export class ApiKey {
   }
 }
 
+type ListResponse<T> = { count: number; data: T[] };
+
 @Injectable()
 export class ApiService {
   constructor(
@@ -36,10 +38,18 @@ export class ApiService {
   getApiKeys$(): Observable<ApiKey[]> {
     console.log('getting api-keys');
     return this.httpClient
-      .get<Jsonify<ApiKey[]>>(`${this.baseUrl}/jwt`, {
+      .get<ListResponse<Jsonify<ApiKey>>>(`${this.baseUrl}/jwt`, {
         withCredentials: true,
       })
-      .pipe(map((j) => j.map((k) => new ApiKey(k))));
+      .pipe(
+        map((response) => {
+          return response.data.map((apiKey) => new ApiKey(apiKey));
+        })
+      );
+  }
+
+  createApiKey$(apiKey: {}): Observable<void> {
+    return NEVER;
   }
 
   login$(token: string): Observable<void> {
@@ -60,7 +70,7 @@ export class ApiService {
   }): Observable<string> {
     return this.httpClient
       .post<{ token: string }>(
-      `${this.baseUrl}/passwordless-register`,
+        `${this.baseUrl}/passwordless-register`,
         loginRequest
       )
       .pipe(map((r) => r.token));

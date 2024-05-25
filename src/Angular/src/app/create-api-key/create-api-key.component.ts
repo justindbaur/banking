@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
+import { ApiService } from '../services/api.service';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-api-key',
   templateUrl: './create-api-key.component.html',
-  styleUrls: ['./create-api-key.component.scss']
+  styleUrls: ['./create-api-key.component.scss'],
 })
 export class CreateApiKeyComponent {
   form = this.fb.nonNullable.group({
@@ -12,9 +14,12 @@ export class CreateApiKeyComponent {
     expiration: new FormControl('', Validators.required),
   });
 
-  constructor(private fb: FormBuilder) { }
+  constructor(
+    private fb: FormBuilder,
+    private readonly apiService: ApiService
+  ) {}
 
-  create() {
+  async create() {
     console.log(this.form.value);
     const date = new Date();
     const expiration = this.form.value.expiration;
@@ -31,5 +36,7 @@ export class CreateApiKeyComponent {
 
       expirationDate = new Date(date.getTime() + minutes * 60 * 1000);
     }
+
+    await lastValueFrom(this.apiService.createApiKey$({}));
   }
 }
