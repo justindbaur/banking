@@ -3,11 +3,12 @@ import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Client } from '@passwordlessdev/passwordless-client';
 import { ApiService } from '../services/api.service';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
   form = this.fb.nonNullable.group({
@@ -18,15 +19,15 @@ export class LoginComponent {
     private fb: FormBuilder,
     private router: Router,
     private apiService: ApiService,
-    private client: Client) {
-  }
+    private client: Client
+  ) {}
 
   public async login() {
     const token = await this.client.signinWithAlias(this.form.value.username!);
     console.log(token);
 
-    await this.apiService.login(token);
+    await lastValueFrom(this.apiService.login$(token));
 
-    this.router.navigate(['/api-keys']);
+    await this.router.navigate(['/api-keys']);
   }
 }
