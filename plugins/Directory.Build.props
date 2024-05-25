@@ -17,25 +17,25 @@
   <!-- All plugins will need to implement the Abstractions project -->
   <ItemGroup Condition="'$(IsPluginProject)' == 'true'">
     <ProjectReference Include="$(SourceRoot)\Abstractions\Abstractions.csproj" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <Using Include="Banking.Abstractions" />
   </ItemGroup>
 
 
   <ItemGroup Condition="'$(IsPluginTestProject)' == 'true'">
     <!-- Test project packages -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
-    <PackageReference Include="xunit" Version="2.5.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageReference Include="xunit" Version="2.8.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Moq" Version="4.18.4" />
+    <PackageReference Include="Pretender" Version="0.1.5-prerelease" />
 
     <!-- Global using -->
     <Using Include="Xunit" />
@@ -58,9 +58,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(UseCsv)' == 'true'" Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Condition="'$(UseHttp)' == 'true'" Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Condition="'$(UseOptions)' == 'true'" Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageReference Condition="'$(UseOtp)' == 'true'" Include="Otp.NET" Version="1.3.0" />
+    <PackageReference Condition="'$(UseCsv)' == 'true'" Include="CsvHelper" Version="32.0.3" />
+    <PackageReference Condition="'$(UseHttp)' == 'true'" Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Condition="'$(UseOptions)' == 'true'" Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Condition="'$(UseOtp)' == 'true'" Include="Otp.NET" Version="1.4.0" />
   </ItemGroup>
 </Project>
