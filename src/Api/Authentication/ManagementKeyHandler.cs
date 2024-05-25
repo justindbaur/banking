@@ -20,9 +20,8 @@ public class ManagementKeyHandler : AuthenticationHandler<AuthenticationSchemeOp
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
         IOptions<ManagementOptions> optionsAccessor)
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         _managementOptions = optionsAccessor.Value;
     }
