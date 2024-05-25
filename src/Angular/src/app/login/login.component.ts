@@ -23,10 +23,16 @@ export class LoginComponent {
   ) {}
 
   public async login() {
-    const token = await this.client.signinWithAlias(this.form.value.username!);
-    console.log(token);
+    const tokenResponse = await this.client.signinWithAlias(
+      this.form.value.username!
+    );
 
-    await lastValueFrom(this.apiService.login$(token));
+    if (tokenResponse.error != null) {
+      console.log(tokenResponse.error);
+      return;
+    }
+
+    await lastValueFrom(this.apiService.login$(tokenResponse.token));
 
     await this.router.navigate(['/api-keys']);
   }

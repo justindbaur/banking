@@ -55,16 +55,14 @@ export class ApiService {
   }
 
   register$(loginRequest: {
-    fullName: string;
     username: string;
     nickname: string;
   }): Observable<string> {
-    return this.httpClient.post(
+    return this.httpClient
+      .post<{ token: string }>(
       `${this.baseUrl}/passwordless-register`,
-      loginRequest,
-      {
-        responseType: 'text',
-      }
-    );
+        loginRequest
+      )
+      .pipe(map((r) => r.token));
   }
 }
