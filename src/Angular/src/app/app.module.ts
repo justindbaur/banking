@@ -22,7 +22,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LoginComponent } from './login/login.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { Client } from '@passwordlessdev/passwordless-client';
 import { ApiService } from './services/api.service';
 import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
@@ -56,7 +56,6 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     MatInputModule,
     MatCardModule,
     MatSelectModule,
-    HttpClientModule,
   ],
   providers: [
     {
@@ -75,6 +74,7 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     {
       provide: ApiService,
     },
+    provideHttpClient(withInterceptors([])),
   ],
   bootstrap: [AppComponent],
 })
