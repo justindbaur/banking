@@ -13,8 +13,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { MatCardModule} from '@angular/material/card';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LoginComponent } from './login/login.component';
@@ -36,7 +39,7 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     NavbarComponent,
     LoginComponent,
     ApiKeysComponent,
-    CreateApiKeyComponent
+    CreateApiKeyComponent,
   ],
   imports: [
     BrowserModule,
@@ -53,22 +56,26 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     MatInputModule,
     MatCardModule,
     MatSelectModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   providers: [
-    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' }},
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { appearance: 'outline' },
+    },
     { provide: BASE_URL, useValue: environment.apiUrl },
     { provide: PASSWORDLESS_API_KEY, useValue: environment.passwordlessApiKey },
     { provide: PASSWORDLESS_API_URL, useValue: environment.passwordlessApiUrl },
     {
       provide: Client,
-      useFactory: (apiUrl: string, apiKey: string) => new Client({ apiUrl, apiKey }),
+      useFactory: (apiUrl: string, apiKey: string) =>
+        new Client({ apiUrl, apiKey }),
       deps: [PASSWORDLESS_API_URL, PASSWORDLESS_API_KEY],
     },
     {
-      provide: ApiService
-    }
+      provide: ApiService,
+    },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
