@@ -86,5 +86,14 @@ public static class SecurityEndpoints
             return Ok(ListResponse.Create(keys));
         })
             .RequireCors("AllowCredentials");
+
+        app.MapGet("/user/info", (ClaimsPrincipal user) =>
+        {
+            return new
+            {
+                IsAuthenticated = user.Identity?.IsAuthenticated ?? false,
+            };
+        })
+            .RequireCors("AllowCredentials");
     }
 }

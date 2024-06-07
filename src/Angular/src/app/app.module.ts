@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { CreateTokenComponent } from './create-token/create-token.component';
+import { RegisterComponent } from './register/register.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './navbar/navbar.component';
 import { LayoutModule } from '@angular/cdk/layout';
@@ -27,6 +27,8 @@ import { Client } from '@passwordlessdev/passwordless-client';
 import { ApiService } from './services/api.service';
 import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
 import { environment } from '../environments/environment';
+import { UserService } from './services/user.service';
+import { HomeComponent } from './home/home.component';
 
 export const BASE_URL = new InjectionToken<string>('BASE_URL');
 const PASSWORDLESS_API_URL = new InjectionToken<string>('PASSWORDLESS_API_URL');
@@ -35,11 +37,12 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
 @NgModule({
   declarations: [
     AppComponent,
-    CreateTokenComponent,
+    RegisterComponent,
     NavbarComponent,
     LoginComponent,
     ApiKeysComponent,
     CreateApiKeyComponent,
+    HomeComponent,
   ],
   imports: [
     BrowserModule,
@@ -60,11 +63,11 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
   providers: [
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: { appearance: 'outline' },
+      useValue: { appearance: 'fill' },
     },
     { provide: BASE_URL, useValue: environment.apiUrl },
     { provide: PASSWORDLESS_API_KEY, useValue: environment.passwordlessApiKey },
-    { provide: PASSWORDLESS_API_URL, useValue: environment.passwordlessApiUrl },
+    { provide: PASSWORDLESS_API_URL, useValue: environment.passwordlessApiUrl ?? 'https://v4.passwordless.dev' },
     {
       provide: Client,
       useFactory: (apiUrl: string, apiKey: string) =>
@@ -75,6 +78,7 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
       provide: ApiService,
     },
     provideHttpClient(withInterceptors([])),
+    UserService,
   ],
   bootstrap: [AppComponent],
 })

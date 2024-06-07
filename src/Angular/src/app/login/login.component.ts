@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Client } from '@passwordlessdev/passwordless-client';
-import { ApiService } from '../services/api.service';
 import { lastValueFrom } from 'rxjs';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -18,21 +17,17 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private apiService: ApiService,
-    private client: Client
+    private readonly userService: UserService,
   ) {}
 
   public async login() {
-    const tokenResponse = await this.client.signinWithAlias(
-      this.form.value.username!
-    );
-
-    if (tokenResponse.error != null) {
-      console.log(tokenResponse.error);
+    if (!this.form.valid) {
       return;
     }
 
-    await lastValueFrom(this.apiService.login$(tokenResponse.token));
+    await lastValueFrom(this.userService.login$(this.form.value.username!));
+
+    await lastValueFrom(this.userService.refreshInfo$());
 
     await this.router.navigate(['/api-keys']);
   }

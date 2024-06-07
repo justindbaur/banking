@@ -52,18 +52,6 @@ export class ApiService {
     return NEVER;
   }
 
-  login$(token: string): Observable<void> {
-    return this.httpClient.post<void>(
-      `${this.baseUrl}/passwordless-login`,
-      {
-        token,
-      },
-      {
-        withCredentials: true,
-      }
-    );
-  }
-
   register$(loginRequest: {
     username: string;
     nickname: string;

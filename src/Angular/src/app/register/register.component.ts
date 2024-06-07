@@ -7,10 +7,10 @@ import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-token',
-  templateUrl: './create-token.component.html',
-  styleUrls: ['./create-token.component.scss'],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss'],
 })
-export class CreateTokenComponent {
+export class RegisterComponent {
   form = this.fb.nonNullable.group({
     nickname: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),

@@ -1,15 +1,36 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { CreateTokenComponent } from './create-token/create-token.component';
+import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
+import { HomeComponent } from './home/home.component';
 
 const routes: Routes = [
-  { path: 'register', component: CreateTokenComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'api-keys', component: ApiKeysComponent },
-  { path: 'api-keys/create', component: CreateApiKeyComponent },
+  {
+    path: '',
+    component: HomeComponent,
+    title: 'Home',
+    data: { pageTitle: 'Home' },
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    data: { pageTitle: 'Register' },
+  },
+  { path: 'login', component: LoginComponent, data: { pageTitle: 'Login' } },
+  {
+    path: 'api-keys',
+    component: ApiKeysComponent,
+    data: { pageTitle: 'API Keys' },
+    children: [
+      {
+        path: 'create',
+        component: CreateApiKeyComponent,
+        data: { pageTitle: 'Create API Key' },
+      },
+    ],
+  },
 ];
 
 @NgModule({

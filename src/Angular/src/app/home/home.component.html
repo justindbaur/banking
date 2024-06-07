@@ -1,0 +1,8 @@
+<ng-container *ngIf="userService.userInfo$ | async as userInfo">
+    <ng-container *ngIf="userInfo.isAuthenticated else anon">
+        <p>You're authenticated</p>
+    </ng-container>
+    <ng-template #anon>
+        <app-login></app-login>
+    </ng-template>
+</ng-container>
