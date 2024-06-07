@@ -5,6 +5,7 @@ import { LoginComponent } from './login/login.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
 import { HomeComponent } from './home/home.component';
+import { authenticated } from './guards/authenticated.guard';
 
 const routes: Routes = [
   {
@@ -12,6 +13,7 @@ const routes: Routes = [
     component: HomeComponent,
     title: 'Home',
     data: { pageTitle: 'Home' },
+    canActivate: [authenticated],
   },
   {
     path: 'register',

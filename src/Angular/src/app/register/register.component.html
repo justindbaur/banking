@@ -1,16 +1,27 @@
-<form [formGroup]="form" (ngSubmit)="register()">
-  <div>
-    <mat-form-field>
-      <mat-label>Username</mat-label>
-      <input matInput formControlName="username" />
-    </mat-form-field>
-  </div>
-  <div>
-    <mat-form-field>
-      <mat-label>Nickname</mat-label>
-      <input matInput formControlName="nickname" />
-    </mat-form-field>
-  </div>
-  <button mat-raised-button color="primary" type="submit">Register</button>
-  <p>Already have an account? <a href="/login">Login</a>.</p>
-</form>
+<mat-card>
+  <form [formGroup]="form" (ngSubmit)="register()">
+    <mat-card-content>
+      <div>
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" />
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field>
+          <mat-label>Nickname</mat-label>
+          <input matInput formControlName="nickname" />
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="primary" type="submit">Register</button>
+    </mat-card-actions>
+  </form>
+</mat-card>
+<br />
+<mat-card>
+  <mat-card-content>
+    <p>Already have an account? <a href="/login">Login</a>.</p>
+  </mat-card-content>
+</mat-card>
