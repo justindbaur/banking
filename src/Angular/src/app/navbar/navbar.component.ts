@@ -1,7 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { map, Observable, shareReplay, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  map,
+  Observable,
+  share,
+  shareReplay,
+  tap,
+} from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { UserInfo, UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-navbar',
@@ -18,13 +26,24 @@ export class NavbarComponent {
 
   pageTitle$: Observable<string>;
 
+  userInfo$ = inject(UserService).userInfo$.pipe(
+    share({
+      connector: () =>
+        new BehaviorSubject<UserInfo>({ isAuthenticated: false }),
+      resetOnRefCountZero: true,
+    })
+  );
+
   constructor(
     private breakpointObserver: BreakpointObserver,
     private readonly activatedRoute: ActivatedRoute
   ) {
     this.pageTitle$ = this.activatedRoute.data.pipe(
-      tap(v => console.log("data", v)),
       map((data) => data['pageTitle'])
     );
+  }
+
+  protected hasRole(userInfo: UserInfo) {
+    return userInfo.isAuthenticated;
   }
 }

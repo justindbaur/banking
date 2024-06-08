@@ -1,7 +1,7 @@
 import {
-  BehaviorSubject,
   Observable,
   Subject,
+  concatMap,
   defer,
   map,
   merge,
@@ -15,8 +15,8 @@ import { Inject, Injectable } from '@angular/core';
 import { BASE_URL } from '../app.module';
 import { Client } from '@passwordlessdev/passwordless-client';
 
-type UserInfo = {
-  isAuthenticated: true;
+export type UserInfo = {
+  isAuthenticated: boolean;
 };
 
 @Injectable()
@@ -59,6 +59,29 @@ export class UserService {
         )
       )
     );
+  }
+
+  register$(registerRequest: { username: string; nickname: string }) {
+    return this.httpClient
+      .post<{ token: string }>(
+        `${this.baseUrl}/passwordless-register`,
+        registerRequest
+      )
+      .pipe(
+        concatMap(async (response) => {
+          return await this.passwordlessClient.register(
+            response.token,
+            registerRequest.nickname
+          );
+        }),
+        map((response) => {
+          if (response.error) {
+            throw new Error(response.error.detail);
+          }
+
+          return response.token;
+        })
+      );
   }
 
   refreshInfo$() {

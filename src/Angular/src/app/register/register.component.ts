@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Client } from '@passwordlessdev/passwordless-client';
-import { ApiService } from '../services/api.service';
 import { lastValueFrom } from 'rxjs';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-create-token',
@@ -11,30 +10,29 @@ import { lastValueFrom } from 'rxjs';
   styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
-  form = this.fb.nonNullable.group({
+  form = this.formBuilder.nonNullable.group({
     nickname: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
   });
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private client: Client,
-    private apiService: ApiService
+    private readonly formBuilder: FormBuilder,
+    private readonly router: Router,
+    private readonly userService: UserService
   ) {}
 
   public async register() {
-    const token = await lastValueFrom(
-      this.apiService.register$({
+    if (this.form.invalid) {
+      return;
+    }
+
+    await lastValueFrom(
+      this.userService.register$({
         nickname: this.form.value.nickname!,
         username: this.form.value.username!,
       })
     );
-    try {
-      await this.client.register(token, this.form.value.nickname!);
-      await this.router.navigate(['/login']);
-    } catch (e) {
-      console.error(e);
-    }
+
+    await this.router.navigate(['/login']);
   }
 }

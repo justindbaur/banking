@@ -51,16 +51,4 @@ export class ApiService {
   createApiKey$(apiKey: {}): Observable<void> {
     return NEVER;
   }
-
-  register$(loginRequest: {
-    username: string;
-    nickname: string;
-  }): Observable<string> {
-    return this.httpClient
-      .post<{ token: string }>(
-        `${this.baseUrl}/passwordless-register`,
-        loginRequest
-      )
-      .pipe(map((r) => r.token));
-  }
 }
