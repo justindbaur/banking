@@ -2,10 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
-import { ApiKeysComponent } from './api-keys/api-keys.component';
-import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
+import { CreateComponent } from './api-keys/create/create.component';
 import { HomeComponent } from './home/home.component';
 import { authenticated } from './guards/authenticated.guard';
+import { ListComponent } from './api-keys/list/list.component';
+import { ApiKeysComponent } from './api-keys/api-keys.component';
 
 const routes: Routes = [
   {
@@ -25,10 +26,16 @@ const routes: Routes = [
     path: 'api-keys',
     component: ApiKeysComponent,
     data: { pageTitle: 'API Keys' },
+    canActivate: [authenticated],
     children: [
       {
+        path: '',
+        component: ListComponent,
+        data: { pageTitle: 'Something' },
+      },
+      {
         path: 'create',
-        component: CreateApiKeyComponent,
+        component: CreateComponent,
         data: { pageTitle: 'Create API Key' },
       },
     ],

@@ -1,0 +1,27 @@
+<mat-card>
+  <form [formGroup]="form" (ngSubmit)="create()">
+  <mat-card-content>
+    <div>
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+    </div>
+    <div>
+      <mat-form-field>
+        <mat-label>Expiration</mat-label>
+        <mat-select formControlName="expiration">
+          <mat-option value="never">Never</mat-option>
+          <mat-option value="60">1 Hour</mat-option>
+          <mat-option value="1440">1 Day</mat-option>
+          <mat-option value="10080">1 Week</mat-option>
+          <!-- <mat-option value="custom">Custom</mat-option> -->
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button color="primary" type="submit">Create</button>
+  </mat-card-actions>
+  </form>
+</mat-card>

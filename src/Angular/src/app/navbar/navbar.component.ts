@@ -28,8 +28,9 @@ export class NavbarComponent {
 
   userInfo$ = inject(UserService).userInfo$.pipe(
     share({
-      connector: () =>
-        new BehaviorSubject<UserInfo>({ isAuthenticated: false }),
+      connector: () => {
+        return new BehaviorSubject<UserInfo>({ isAuthenticated: false });
+      },
       resetOnRefCountZero: true,
     })
   );

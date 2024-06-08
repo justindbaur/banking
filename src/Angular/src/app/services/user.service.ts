@@ -89,6 +89,8 @@ export class UserService {
   }
 
   private getInfo$(): Observable<UserInfo> {
-    return this.httpClient.get<UserInfo>(`${this.baseUrl}/user/info`);
+    return this.httpClient.get<UserInfo>(`${this.baseUrl}/user/info`, {
+      withCredentials: true,
+    });
   }
 }

@@ -21,14 +21,15 @@ import {
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LoginComponent } from './login/login.component';
-import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { Client } from '@passwordlessdev/passwordless-client';
 import { ApiService } from './services/api.service';
-import { CreateApiKeyComponent } from './create-api-key/create-api-key.component';
+import { CreateComponent } from './api-keys/create/create.component';
 import { environment } from '../environments/environment';
 import { UserService } from './services/user.service';
 import { HomeComponent } from './home/home.component';
+import { ListComponent } from './api-keys/list/list.component';
+import { ApiKeysComponent } from './api-keys/api-keys.component';
 
 export const BASE_URL = new InjectionToken<string>('BASE_URL');
 const PASSWORDLESS_API_URL = new InjectionToken<string>('PASSWORDLESS_API_URL');
@@ -40,9 +41,10 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     RegisterComponent,
     NavbarComponent,
     LoginComponent,
-    ApiKeysComponent,
-    CreateApiKeyComponent,
+    CreateComponent,
     HomeComponent,
+    ListComponent,
+    ApiKeysComponent,
   ],
   imports: [
     BrowserModule,
@@ -67,7 +69,10 @@ const PASSWORDLESS_API_KEY = new InjectionToken<string>('PASSWORDLESS_API_KEY');
     },
     { provide: BASE_URL, useValue: environment.apiUrl },
     { provide: PASSWORDLESS_API_KEY, useValue: environment.passwordlessApiKey },
-    { provide: PASSWORDLESS_API_URL, useValue: environment.passwordlessApiUrl ?? 'https://v4.passwordless.dev' },
+    {
+      provide: PASSWORDLESS_API_URL,
+      useValue: environment.passwordlessApiUrl ?? 'https://v4.passwordless.dev',
+    },
     {
       provide: Client,
       useFactory: (apiUrl: string, apiKey: string) =>

@@ -9,10 +9,5 @@ import { ApiKey } from '../services/api.service';
   styleUrls: ['./api-keys.component.scss'],
 })
 export class ApiKeysComponent {
-  displayedColumns = ['name', 'created', 'lastUsed', 'expiration'];
-  apiKeys$: Observable<ApiKey[]>;
-
-  constructor(private apiService: ApiService) {
-    this.apiKeys$ = this.apiService.getApiKeys$();
-  }
+  constructor() {}
 }

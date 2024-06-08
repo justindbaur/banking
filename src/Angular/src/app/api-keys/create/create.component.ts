@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
-import { ApiService } from '../services/api.service';
+import { ApiService } from '../../services/api.service';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-api-key',
-  templateUrl: './create-api-key.component.html',
-  styleUrls: ['./create-api-key.component.scss'],
+  templateUrl: './create.component.html',
+  styleUrls: ['./create.component.scss'],
 })
-export class CreateApiKeyComponent {
+export class CreateComponent {
   form = this.fb.nonNullable.group({
     name: new FormControl('', Validators.required),
     expiration: new FormControl('', Validators.required),

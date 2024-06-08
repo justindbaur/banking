@@ -94,6 +94,11 @@ public static class SecurityEndpoints
                 IsAuthenticated = user.Identity?.IsAuthenticated ?? false,
             };
         })
-            .RequireCors("AllowCredentials");
+            .RequireCors("AllowCredentials")
+            .RequireAuthorization((policy) =>
+            {
+                policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion((context) => true);
+            });
     }
 }

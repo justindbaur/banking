@@ -24,6 +24,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         b.Cookie.Name = "Banking";
 
+        if (builder.Environment.IsDevelopment()) 
+        {
+            b.Cookie.SameSite = SameSiteMode.None;
+        }
+
         b.SlidingExpiration = false;
         b.ExpireTimeSpan = TimeSpan.FromHours(1);
     })

@@ -1,16 +1,7 @@
-<h2>Your keys</h2>
-<button mat-raised-button color="primary" routerLink="/api-keys/create">Create new</button>
-<ng-container *ngIf="apiKeys$ | async as apiKeys">
-  <ng-container *ngIf="apiKeys.length > 0">
-    <ng-template *ngFor="let apiKey of apiKeys">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{ apiKey.name }}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-    </ng-template>
-  </ng-container>
-  <div *ngIf="apiKeys.length == 0">
-    <p>No API Keys, create one.</p>
-  </div>
-</ng-container>
+<mat-card>
+  <mat-card-content>
+    <button mat-stroked-button routerLink="/api-keys">API Keys</button>
+  </mat-card-content>
+</mat-card>
+<br />
+<router-outlet></router-outlet>
