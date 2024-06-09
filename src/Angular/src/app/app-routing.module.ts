@@ -7,6 +7,9 @@ import { HomeComponent } from './home/home.component';
 import { authenticated } from './guards/authenticated.guard';
 import { ListComponent } from './api-keys/list/list.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
+import { SetupComponent } from './setup/setup.component';
+import { NewComponent } from './setup/new/new.component';
+import { NewItemComponent } from './setup/new-item/new-item.component';
 
 const routes: Routes = [
   {
@@ -37,6 +40,25 @@ const routes: Routes = [
         path: 'create',
         component: CreateComponent,
         data: { pageTitle: 'Create API Key' },
+      },
+    ],
+  },
+  {
+    path: 'setup',
+    component: SetupComponent,
+    children: [
+      {
+        path: 'new',
+        children: [
+          {
+            path: '',
+            component: NewComponent,
+          },
+          {
+            path: ':id',
+            component: NewItemComponent,
+          },
+        ],
       },
     ],
   },

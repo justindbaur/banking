@@ -30,6 +30,7 @@ import { UserService } from './services/user.service';
 import { HomeComponent } from './home/home.component';
 import { ListComponent } from './api-keys/list/list.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
+import { SetupComponent } from './setup/setup.component';
 
 export const BASE_URL = new InjectionToken<string>('BASE_URL');
 const PASSWORDLESS_API_URL = new InjectionToken<string>('PASSWORDLESS_API_URL');

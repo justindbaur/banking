@@ -37,6 +37,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ITransactionSource, ConsumersTransactionSource>();
 
+        services.AddSingleton<ISource, ConsumersCreditUnionSource>();
+
         return services;
     }
 }

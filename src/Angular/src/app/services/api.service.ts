@@ -26,7 +26,7 @@ export class ApiKey {
   }
 }
 
-type ListResponse<T> = { count: number; data: T[] };
+export type ListResponse<T> = { count: number; data: T[] };
 
 @Injectable()
 export class ApiService {
@@ -36,7 +36,6 @@ export class ApiService {
   ) {}
 
   getApiKeys$(): Observable<ApiKey[]> {
-    console.log('getting api-keys');
     return this.httpClient
       .get<ListResponse<Jsonify<ApiKey>>>(`${this.baseUrl}/jwt`, {
         withCredentials: true,

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Expressions;
 using Microsoft.OpenApi.Models;
 using static Microsoft.AspNetCore.Http.Results;
 
@@ -30,7 +31,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
 
         b.SlidingExpiration = false;
-        b.ExpireTimeSpan = TimeSpan.FromHours(1);
+
+        if (builder.Environment.IsDevelopment())
+        {
+            b.ExpireTimeSpan = TimeSpan.FromHours(12);
+        }
+        else
+        {
+            b.ExpireTimeSpan = TimeSpan.FromHours(1);
+        }
     })
     .AddJwtBearer(options =>
     {
@@ -167,7 +176,30 @@ app.UseCors("Default");
 
 app.UseAuthorization();
 
-app.MapGet("/sources", (IEnumerable<ITransactionSource> sources) => ListResponse.Create(sources.Select(s => s.SourceName).ToList()));
+app.MapGet("/sources", (IEnumerable<ISource> sources) => 
+{ 
+    return ListResponse.Create(sources.Select(s => new { s.Id, s.Name }).ToList());
+})
+    .RequireCors("AllowCredentials");
+
+app.MapGet("/sources/{sourceId}/start", async Task<IResult> (IEnumerable<ISource> sources, string sourceId, CancellationToken cancellationToken) =>
+{
+    var source = sources.FirstOrDefault(s => s.Id == sourceId);
+
+    if (source == null)
+    {
+        return ValidationProblem(new Dictionary<string, string[]>
+        {
+
+        }, "Invalid source");
+    }
+
+    var creator = source.Creator;
+
+    var startToken = await creator.StartAsync(cancellationToken);
+
+    return Ok(startToken);
+});
 
 app.MapPost("/sync", async (ISyncService syncService, CancellationToken cancellationToken) =>
 {
@@ -193,6 +225,8 @@ app.MapPost("/sync/{sourceName}", async Task<IResult> (IEnumerable<ITransactionS
 
     return NoContent();
 });
+
+
 
 app.MapGet("/transactions", async (BankingContext bankingContext, CancellationToken cancellationToken) =>
 {

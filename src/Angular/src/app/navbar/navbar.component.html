@@ -10,6 +10,9 @@
     <mat-nav-list *ngIf="userInfo.isAuthenticated">
       <a mat-list-item href="/api-keys">API Keys</a>
     </mat-nav-list>
+    <mat-nav-list *ngIf="userInfo.isAuthenticated">
+      <a mat-list-item href="/setup">Setup</a>
+    </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary">
