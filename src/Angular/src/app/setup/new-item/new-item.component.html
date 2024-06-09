@@ -1,0 +1,18 @@
+<form *ngIf="start$ | async as start" (ngSubmit)="submit(start.formGroup, start.state)" [formGroup]="start.formGroup">
+  <ng-container *ngFor="let input of start.inputs | keyvalue">
+    @switch (input.value.type ) {
+      @case ('select') {
+        <p>Unsupported</p>
+      }
+      @default {
+        <mat-form-field>
+          <mat-label>{{input.value.label}}</mat-label>
+          <input [formControlName]="input.key" matInput [type]="input.value.type" />
+        </mat-form-field>
+        <br />
+      }
+    }
+  </ng-container>
+  <input type="hidden" [value]="start.state" />
+  <button mat-raised-button color="primary" type="submit">Next</button>
+</form>

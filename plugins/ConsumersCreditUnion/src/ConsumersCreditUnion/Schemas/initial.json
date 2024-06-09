@@ -1,14 +1,15 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
+  "$schema": "./schema.json",
+  "inputs": {
     "username": {
-      "type": "string",
-      "description": "Username"
+      "type": "text",
+      "label": "Username",
+      "order": 0
     },
     "password": {
-      "type": "string",
-      "description": "Password"
+      "type": "password",
+      "label": "Password",
+      "order": 1
     }
   }
 }
