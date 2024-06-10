@@ -21,18 +21,6 @@ public static class ServiceCollectionExtensions
                 client.BaseAddress = new Uri(Constants.BaseUrl);
                 // Consumers requires a User-Agent header
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BankingApi", "1.0.0"));
-            })
-            .AddHttpMessageHandler(sp => new ConsumersAuthenticatingHandler(
-                sp.GetRequiredService<IHttpClientFactory>(),
-                sp.GetRequiredService<IOptions<ConsumersCreditUnionOptions>>())
-            );
-
-        services.AddHttpClient(ConsumersAuthenticatingHandler.ClientName)
-            .ConfigureHttpClient(client =>
-            {
-                client.BaseAddress = new Uri(Constants.BaseUrl);
-
-                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BankingApi", "1.0.0"));
             });
 
         services.AddSingleton<ITransactionSource, ConsumersTransactionSource>();

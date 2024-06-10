@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Claims;
 using Banking.Abstractions;
 using Banking.Abstractions.Entities;
@@ -199,7 +200,28 @@ app.MapGet("/sources/{sourceId}/start", async Task<IResult> (IEnumerable<ISource
     var startToken = await creator.StartAsync(cancellationToken);
 
     return Ok(startToken);
-});
+})
+    .RequireCors("AllowCredentials");
+
+app.MapPost("/sources/{sourceId}/resume", async Task<IResult> (IEnumerable<ISource> sources, string sourceId, StepResponse stepResponse, CancellationToken cancellationToken) =>
+{
+    var source = sources.FirstOrDefault(s => s.Id == sourceId);
+
+    if (source == null)
+    {
+        return ValidationProblem(
+            new Dictionary<string, string[]>(),
+            "Invalid source"
+        );
+    }
+
+    var creator = source.Creator;
+
+    var resumeToken = await creator.ResumeAsync(stepResponse, cancellationToken);
+
+    return Ok(resumeToken);
+})
+    .RequireCors("AllowCredentials");
 
 app.MapPost("/sync", async (ISyncService syncService, CancellationToken cancellationToken) =>
 {

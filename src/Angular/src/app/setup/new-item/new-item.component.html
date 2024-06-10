@@ -1,5 +1,5 @@
-<form *ngIf="start$ | async as start" (ngSubmit)="submit(start.formGroup, start.state)" [formGroup]="start.formGroup">
-  <ng-container *ngFor="let input of start.inputs | keyvalue">
+<form *ngIf="start$ | async as start" (ngSubmit)="submit(start.sourceId, start.formGroup, start.state)" [formGroup]="start.formGroup">
+  <ng-container *ngFor="let input of start.inputs | keyvalue: sortOrder">
     @switch (input.value.type ) {
       @case ('select') {
         <p>Unsupported</p>
