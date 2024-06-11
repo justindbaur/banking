@@ -105,7 +105,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddBankingContext();
 
-builder.Services.AddSingleton<ISourceProvider, DefaultSourceProvider>();
+builder.Services.AddSingleton<ISourceTemplateProvider, DefaultSourceProvider>();
 // builder.Services.AddScoped<ISyncService, DefaultSyncService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -25,7 +25,7 @@ public static class SourcesEndpoints
             }).ToArray());
         });
 
-        group.MapGet("/{sourceId}", async (Guid sourceId, ISourceRepository sourceRepository, ISourceProvider sourceProvider) =>
+        group.MapGet("/{sourceId}", async (Guid sourceId, ISourceRepository sourceRepository, ISourceTemplateProvider sourceProvider) =>
         {
             var source = await sourceRepository.GetByIdAsync(sourceId);
 
@@ -43,14 +43,14 @@ public static class SourcesEndpoints
             });
         });
 
-        group.MapGet("/templates", (IEnumerable<ISource> sources) =>
+        group.MapGet("/templates", (IEnumerable<ISourceService> sources) =>
         {
             return ListResponse.Create(
                 sources.Select(s => new { s.Id, s.Name }).ToArray()
             );
         });
 
-        group.MapGet("/{sourceId}/start", async Task<IResult> (ISourceProvider sourceProvider, string sourceId, CancellationToken cancellationToken) =>
+        group.MapGet("/{sourceId}/start", async Task<IResult> (ISourceTemplateProvider sourceProvider, string sourceId, CancellationToken cancellationToken) =>
         {
             if (!sourceProvider.TryGetSource(sourceId, out var source))
             {
@@ -67,7 +67,7 @@ public static class SourcesEndpoints
             return Ok(startToken);
         });
 
-        group.MapPost("/{sourceId}/resume", async Task<IResult> (ISourceProvider sourceProvider, string sourceId, StepResponse stepResponse, ISourceRepository sourceRepository, CancellationToken cancellationToken) =>
+        group.MapPost("/{sourceId}/resume", async Task<IResult> (ISourceTemplateProvider sourceProvider, string sourceId, StepResponse stepResponse, ISourceRepository sourceRepository, CancellationToken cancellationToken) =>
         {
             if (!sourceProvider.TryGetSource(sourceId, out var source))
             {
@@ -94,9 +94,16 @@ public static class SourcesEndpoints
             return Ok(resumeToken);
         });
 
-        group.MapGet("{sourceId}/accounts", async Task<IResult> (ISourceProvider sourceProvider, string sourceId, CancellationToken cancellationToken) =>
+        group.MapGet("{sourceId}/accounts", async Task<IResult> (ISourceTemplateProvider sourceProvider, ISourceRepository sourceRepository, Guid sourceId, CancellationToken cancellationToken) =>
         {
-            if (!sourceProvider.TryGetSource(sourceId, out var source))
+            var source = await sourceRepository.GetByIdAsync(sourceId);
+
+            if (source == null)
+            {
+                return NotFound();
+            }
+
+            if (!sourceProvider.TryGetSource(source.SourceId, out var sourceTemplate))
             {
                 return ValidationProblem(
                     new Dictionary<string, string[]>(),
@@ -104,16 +111,14 @@ public static class SourcesEndpoints
                 );
             }
 
-
-            var transactionSource = source.TransactionSource;
+            var transactionSource = sourceTemplate.TransactionSource;
 
             if (transactionSource == null)
             {
                 return NoContent();
             }
 
-            // TODO: Get configuration
-            var accounts = await transactionSource.GetAccountsAsync(null!, cancellationToken);
+            var accounts = await transactionSource.GetAccountsAsync(source.Config, cancellationToken);
             return Ok(ListResponse.Create(accounts));
         });
 

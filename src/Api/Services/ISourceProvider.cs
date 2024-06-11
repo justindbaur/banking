@@ -3,7 +3,7 @@ using Banking.Abstractions;
 
 namespace Banking.Api.Services;
 
-public interface ISourceProvider
+public interface ISourceTemplateProvider
 {
-    bool TryGetSource(string sourceId, [MaybeNullWhen(false)] out ISource source);
+    bool TryGetSource(string sourceId, [MaybeNullWhen(false)] out ISourceService source);
 }

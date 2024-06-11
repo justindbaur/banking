@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BankingApi", "1.0.0"));
             });
 
-        services.AddSingleton<ISource, ConsumersCreditUnionSource>();
+        services.AddSingleton<ISourceService, ConsumersCreditUnionSource>();
 
         return services;
     }

@@ -1,6 +1,6 @@
 namespace Banking.Abstractions;
 
-public interface ISource
+public interface ISourceService
 {
     string Id { get; }
     string Name { get; }

@@ -17,6 +17,10 @@ export type Source = {
   enabled: boolean;
 };
 
+export type SourceAccount = {
+  id: string;
+};
+
 @Injectable()
 export class SourcesService {
   constructor(
@@ -33,6 +37,13 @@ export class SourcesService {
   getAll$() {
     return this.httpClient.get<ListResponse<SourceListItem>>(
       `${this.baseUrl}/sources`,
+      { withCredentials: true }
+    );
+  }
+
+  getAccounts$(sourceId: string) {
+    return this.httpClient.get<ListResponse<SourceAccount>>(
+      `${this.baseUrl}/sources/${sourceId}/accounts`,
       { withCredentials: true }
     );
   }

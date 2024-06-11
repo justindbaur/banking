@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Banking.Plugin.ConsumersCreditUnion;
 
-public class ConsumersCreditUnionSource : ISource
+public class ConsumersCreditUnionSource : ISourceService
 {
     public ConsumersCreditUnionSource(IServiceProvider serviceProvider)
     {
