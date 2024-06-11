@@ -1,10 +1,10 @@
-﻿using Banking.Abstractions.Entities;
+﻿using System.Text.Json;
+using Banking.Abstractions.Entities;
 
 namespace Banking.Abstractions;
 
 public interface ITransactionSource
 {
-    string SourceName { get; }
-    Task<IEnumerable<Account>> GetAccountsAsync(CancellationToken cancellationToken);
-    Task<IEnumerable<Transaction>> GetAccountTransactionsAsync(Account account, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonDocument configuration, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonDocument configuration, Account account, CancellationToken cancellationToken);
 }

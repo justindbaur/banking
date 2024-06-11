@@ -12,7 +12,7 @@ import {
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, lastValueFrom, map, switchMap, tap } from 'rxjs';
 import { BASE_URL } from '../../app.module';
 import { MatInputModule } from '@angular/material/input';
@@ -46,7 +46,7 @@ export type StepResponse = {
   state: string | null;
 };
 
-type CompleteResumeToken = { isComplete: true };
+type CompleteResumeToken = { isComplete: true, sourceId: string };
 type IncompleteResumeToken = {
   isComplete: false;
   requirementsSchema: { inputs: Record<string, AnyFormInput> };
@@ -64,6 +64,7 @@ export type ResumeToken = CompleteResumeToken | IncompleteResumeToken;
     MatButtonModule,
     ReactiveFormsModule,
     MatInputModule,
+    RouterModule,
   ],
   templateUrl: './new-item.component.html',
 })
@@ -86,7 +87,8 @@ export class NewItemComponent {
     route: ActivatedRoute,
     private readonly httpClient: HttpClient,
     @Inject(BASE_URL) private readonly baseUrl: string,
-    private readonly formBuilder: FormBuilder
+    private readonly formBuilder: FormBuilder,
+    private readonly router: Router,
   ) {
     const sourceId = route.paramMap.pipe(map((p) => p.get('id')!));
 
@@ -134,7 +136,7 @@ export class NewItemComponent {
       .pipe(
         map((resumeToken) => {
           if (resumeToken.isComplete) {
-            // TODO: Navigate
+            void this.router.navigate(["sources", resumeToken.sourceId]);
             throw new Error('Unreachable');
           }
 

@@ -6,7 +6,15 @@ namespace Banking.Storage;
 
 public static class ModelBuilderExtensions
 {
-    public static PropertyBuilder<JsonDocument?> IsJson(this PropertyBuilder<JsonDocument?> propertyBuilder)
+    public static PropertyBuilder<JsonDocument> IsJson(this PropertyBuilder<JsonDocument> propertyBuilder)
+    {
+        return propertyBuilder.HasConversion(
+            d => JsonSerializer.Serialize(d, (JsonSerializerOptions?)null),
+            s => JsonDocument.Parse(s, default)
+        );
+    }
+
+    public static PropertyBuilder<JsonDocument?> IsNullableJson(this PropertyBuilder<JsonDocument?> propertyBuilder)
     {
         return propertyBuilder.HasConversion(
             d => JsonSerializer.Serialize(d, (JsonSerializerOptions?)null),

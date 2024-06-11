@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 namespace Banking.Plugin.Guideline;
 
 
-
 public class GuidelineTransactionSource : ITransactionSource
 {
     private readonly HttpClient _client;
@@ -19,16 +18,14 @@ public class GuidelineTransactionSource : ITransactionSource
         _jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
     }
 
-    public string SourceName => "Guideline";
-
-    public async Task<IEnumerable<Account>> GetAccountsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonDocument configuration, CancellationToken cancellationToken)
     {
 
 
         throw new Exception("Testing");
     }
 
-    public Task<IEnumerable<Transaction>> GetAccountTransactionsAsync(Account account, CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonDocument configuration, Account account, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

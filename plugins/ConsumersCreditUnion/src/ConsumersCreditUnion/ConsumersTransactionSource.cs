@@ -1,8 +1,10 @@
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Banking.Abstractions.Entities;
+using Banking.Plugin.ConsumersCreditUnion.Utilities;
 using CsvHelper;
 
 namespace Banking.Plugin.ConsumersCreditUnion;
@@ -28,39 +30,55 @@ internal class ConsumersTransactionSource : ITransactionSource
 
     public string SourceName => "ConsumersCreditUnion";
 
-    public async Task<IEnumerable<Account>> GetAccountsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonDocument configuration, CancellationToken cancellationToken)
     {
-        // Get accounts
-        var accountsResponse = await _client.GetFromJsonAsync<AccountsResponse>("gateway/web/accounts", _jsonOptions, cancellationToken);
+        var config = ParseConfig(configuration);
 
-        if (accountsResponse == null)
+        // Get accounts
+        var request = new HttpRequestMessage(HttpMethod.Get, "gateway/web/accounts");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.AccessToken);
+
+        var response = await _client.SendAsync(request, cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        var accounts = await response.Content.ReadFromJsonAsync<AccountsResponse>(cancellationToken);
+
+        if (accounts == null)
         {
-            throw new Exception("Bad");
+            throw new Exception("Expected non-null response");
         }
 
-        return accountsResponse.Accounts.Select(a => new Account
+        return accounts.Accounts.Select(a => new Account
         {
             AccountId = a.Id.ToString(),
             Balance = a.ActualBalance,
             Name = a.Nickname,
             Enabled = true,
-        });
+        }).ToArray();
     }
 
-    public async Task<IEnumerable<Transaction>> GetAccountTransactionsAsync(Account account, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonDocument configuration, Account account, CancellationToken cancellationToken)
     {
-        var exportResponse = await _client.PostAsJsonAsync($"gateway/web/exportTransactions/{account.AccountId}", new
+        var config = ParseConfig(configuration);
+        var request = new HttpRequestMessage(HttpMethod.Post, $"gateway/web/exportTransactions/{account.AccountId}")
         {
-            account.AccountId,
-            EndDate = DateTime.UtcNow,
-            FileFormat = "CSV",
-            IncludeExtendedTransactionData = true,
-            StartDate = DateTime.UtcNow.AddYears(-10),
-        }, cancellationToken);
+            Content = JsonContent.Create(new
+            {
+                account.AccountId,
+                EndDate = DateTime.UtcNow,
+                FileFormat = "CSV",
+                IncludeExtendedTransactionData = true,
+                StartDate = DateTime.UtcNow.AddYears(-10),
+            })
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.AccessToken);
 
-        exportResponse.EnsureSuccessStatusCode();
+        var response = await _client.SendAsync(request, cancellationToken);
 
-        using var reader = new StreamReader(await exportResponse.Content.ReadAsStreamAsync(cancellationToken));
+        response.EnsureSuccessStatusCode();
+
+        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync(cancellationToken));
         using var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture);
         await csvReader.ReadAsync();
         csvReader.ReadHeader();
@@ -68,13 +86,10 @@ internal class ConsumersTransactionSource : ITransactionSource
         var transactions = new List<Transaction>();
         while (await csvReader.ReadAsync())
         {
-            JsonObject? extraInfo = null;
+            var extraInfo = new JsonObject();
             if (csvReader.TryGetField("Check Number", out string? checkNumber) && !string.IsNullOrEmpty(checkNumber))
             {
-                extraInfo = new JsonObject
-                {
-                    ["checkNumber"] = checkNumber,
-                };
+                extraInfo.Add("checkNumber", checkNumber);
             }
 
             var transaction = new Transaction
@@ -92,5 +107,17 @@ internal class ConsumersTransactionSource : ITransactionSource
         }
 
         return transactions;
+    }
+
+    private static ConsumersCreditUnionConfig ParseConfig(JsonDocument jsonDocument)
+    {
+        var config = jsonDocument.Deserialize<ConsumersCreditUnionConfig>();
+
+        if (config == null)
+        {
+            throw new Exception("Invalid config");
+        }
+
+        return config;
     }
 }

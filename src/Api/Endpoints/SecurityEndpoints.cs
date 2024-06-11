@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Banking.Abstractions.Entities;
 using Banking.Api.Authorization;
+using Banking.Api.Utilities;
 using Banking.Storage;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -18,8 +19,7 @@ public static class SecurityEndpoints
     public static void MapSecurityEndpoints(this WebApplication app)
     {
         // Add Passwordless endpoints
-        app.MapPasswordless(enableRegisterEndpoint: true)
-            .RequireCors("AllowCredentials");
+        app.MapPasswordless(enableRegisterEndpoint: true);
 
         app.MapPost("/jwt", async (CreateJwtTokenRequest request, BankingContext bankingContext, HttpContext context) =>
         {
@@ -77,15 +77,13 @@ public static class SecurityEndpoints
 
                 policy.RequireAuthenticatedUser();
                 policy.RequireScope(Scopes.Admin);
-            })
-            .RequireCors("AllowCredentials");
+            });
 
         app.MapGet("/jwt", async (BankingContext context) =>
         {
             var keys = await context.ApiKeys.ToListAsync();
             return Ok(ListResponse.Create(keys));
-        })
-            .RequireCors("AllowCredentials");
+        });
 
         app.MapGet("/user/info", (ClaimsPrincipal user) =>
         {
@@ -94,7 +92,6 @@ public static class SecurityEndpoints
                 IsAuthenticated = user.Identity?.IsAuthenticated ?? false,
             };
         })
-            .RequireCors("AllowCredentials")
             .RequireAuthorization((policy) =>
             {
                 policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme);

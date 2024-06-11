@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -28,6 +27,7 @@ public class StepResponse
     public string? State { get; }
 }
 
+
 public class ResumeToken
 {
     private readonly JsonDocument _jsonDocument;
@@ -39,15 +39,15 @@ public class ResumeToken
         State = state;
     }
 
+    [MemberNotNullWhen(false, nameof(RequirementsSchema))]
+    [MemberNotNullWhen(true, nameof(FinalConfiguration))]
     public bool IsComplete { get; }
 
-    [MemberNotNullWhen(false, nameof(IsComplete))]
     public JsonDocument? RequirementsSchema
     {
         get { return IsComplete == false ? _jsonDocument : null; }
     }
 
-    [MemberNotNullWhen(true, nameof(IsComplete))]
     public JsonDocument? FinalConfiguration
     {
         get { return IsComplete == true ? _jsonDocument : null; }

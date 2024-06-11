@@ -8,13 +8,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddConsumersCreditUnion(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddConsumersCreditUnion(this IServiceCollection services)
     {
-        services.AddOptions<ConsumersCreditUnionOptions>()
-            .Bind(configuration);
-
-        services.AddSingleton<ConsumersAuthenticatingHandler>();
-
         services.AddHttpClient(Constants.HttpClientName)
             .ConfigureHttpClient(client =>
             {
@@ -22,8 +17,6 @@ public static class ServiceCollectionExtensions
                 // Consumers requires a User-Agent header
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BankingApi", "1.0.0"));
             });
-
-        services.AddSingleton<ITransactionSource, ConsumersTransactionSource>();
 
         services.AddSingleton<ISource, ConsumersCreditUnionSource>();
 

@@ -33,16 +33,20 @@ public class AuthLoginRequest
 
 public class AuthLoginResponse
 {
-    public AuthLoginResponse(MfaOption[] mfaOptions, bool mfaRequired)
+    public AuthLoginResponse(MfaOption[] mfaOptions, bool mfaRequired, string? resultCode)
     {
         MfaOptions = mfaOptions;
         MfaRequired = mfaRequired;
+        ResultCode = resultCode;
     }
 
     [JsonPropertyName("mfaOptions")]
     public MfaOption[] MfaOptions { get; }
 
+    [JsonPropertyName("mfaRequired")]
     public bool MfaRequired { get; }
+
+    public string? ResultCode { get; }
 
     public class MfaOption
     {
@@ -157,11 +161,12 @@ public class ConsumersCreditUnionCreator : ICreator
             }
 
             // Offer up all options
-            throw new NotImplementedException();
+            throw new NotImplementedException("MFA is required but authenticator code was not an option.");
         }
 
         // We done?
-        throw new NotImplementedException();
+        // Maybe resultCode === "ALREADY_LOGGED_IN"
+        throw new NotImplementedException("MFA is not required");
     }
 
     private async Task<ResumeToken> DoOtpAsync(StepResponse stepResponse, CancellationToken cancellationToken)

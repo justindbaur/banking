@@ -5,11 +5,13 @@ import { LoginComponent } from './login/login.component';
 import { CreateComponent } from './api-keys/create/create.component';
 import { HomeComponent } from './home/home.component';
 import { authenticated } from './guards/authenticated.guard';
-import { ListComponent } from './api-keys/list/list.component';
+import { ListComponent as ApiKeysListComponent } from './api-keys/list/list.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { SetupComponent } from './setup/setup.component';
 import { NewComponent } from './setup/new/new.component';
 import { NewItemComponent } from './setup/new-item/new-item.component';
+import { SourceComponent } from './source/source.component';
+import { ListComponent as SourcesListComponent } from './source/list.component';
 
 const routes: Routes = [
   {
@@ -33,7 +35,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: ListComponent,
+        component: ApiKeysListComponent,
         data: { pageTitle: 'Something' },
       },
       {
@@ -62,6 +64,19 @@ const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'sources',
+    children: [
+      {
+        path: '',
+        component: SourcesListComponent,
+      },
+      {
+        path: ':id',
+        component: SourceComponent,
+      },
+    ],
+  }
 ];
 
 @NgModule({

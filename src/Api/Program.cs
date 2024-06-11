@@ -1,12 +1,13 @@
-using System.Diagnostics;
 using System.Security.Claims;
-using Banking.Abstractions;
 using Banking.Abstractions.Entities;
 using Banking.Api.Authentication;
 using Banking.Api.Authorization;
 using Banking.Api.Endpoints;
+using Banking.Api.Repositories;
+using Banking.Api.Repositories.Database;
 using Banking.Api.Services;
 using Banking.Api.Services.Implementations;
+using Banking.Api.Utilities;
 using Banking.Storage;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
@@ -14,7 +15,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Expressions;
 using Microsoft.OpenApi.Models;
 using static Microsoft.AspNetCore.Http.Results;
 
@@ -79,6 +79,8 @@ builder.Services.AddAuthorization(b =>
 });
 
 builder.Services.AddScoped<IUserStore<User>, UserStore>();
+builder.Services.AddScoped<ISourceRepository, DbSourceRepository>();
+
 builder.Services.AddSingleton<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 
 builder.Services.AddPasswordless<User>(options =>
@@ -90,24 +92,21 @@ builder.Services.AddPasswordless<User>(options =>
     options.SignInScheme = "Cookies";
 });
 
-builder.Services.AddConsumersCreditUnion(builder.Configuration.GetSection("Consumers"));
+builder.Services.AddConsumersCreditUnion();
 builder.Services.AddGuideline(builder.Configuration.GetSection("Guideline"));
 
 builder.Services.AddCors(options => 
-{ 
-    options.AddPolicy("Default", 
-        policy => policy.WithOrigins("http://localhost:4200"));
-
-    options.AddPolicy("AllowCredentials",
-        policy => policy
-            .WithOrigins("http://localhost:4200", "http://localhost:5026")
-            .AllowCredentials()
-            .AllowAnyHeader());
+{
+    options.AddDefaultPolicy(policy => policy
+        .WithOrigins("http://localhost:4200")
+        .AllowCredentials()
+        .AllowAnyHeader());
 });
 
 builder.Services.AddBankingContext();
 
-builder.Services.AddScoped<ISyncService, DefaultSyncService>();
+builder.Services.AddSingleton<ISourceProvider, DefaultSourceProvider>();
+// builder.Services.AddScoped<ISyncService, DefaultSyncService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -173,80 +172,34 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseCors("Default");
+app.UseCors();
 
 app.UseAuthorization();
 
-app.MapGet("/sources", (IEnumerable<ISource> sources) => 
-{ 
-    return ListResponse.Create(sources.Select(s => new { s.Id, s.Name }).ToList());
-})
-    .RequireCors("AllowCredentials");
+// app.MapPost("/sync", async (ISyncService syncService, CancellationToken cancellationToken) =>
+// {
+//     await syncService.FullSyncAsync(cancellationToken);
+//     return NoContent();
+// });
 
-app.MapGet("/sources/{sourceId}/start", async Task<IResult> (IEnumerable<ISource> sources, string sourceId, CancellationToken cancellationToken) =>
-{
-    var source = sources.FirstOrDefault(s => s.Id == sourceId);
+// app.MapPost("/sync/{sourceName}", async Task<IResult> (IEnumerable<ITransactionSource> transactionSources, string sourceName, CancellationToken cancellationToken) =>
+// {
+//     var transactionSource = transactionSources.FirstOrDefault(ts => ts.SourceName.Equals(sourceName, StringComparison.InvariantCultureIgnoreCase));
 
-    if (source == null)
-    {
-        return ValidationProblem(new Dictionary<string, string[]>
-        {
+//     if (transactionSource == null)
+//     {
+//         return NotFound();
+//     }
 
-        }, "Invalid source");
-    }
+//     var accounts = await transactionSource.GetAccountsAsync(cancellationToken);
 
-    var creator = source.Creator;
+//     foreach (var account in accounts)
+//     {
 
-    var startToken = await creator.StartAsync(cancellationToken);
+//     }
 
-    return Ok(startToken);
-})
-    .RequireCors("AllowCredentials");
-
-app.MapPost("/sources/{sourceId}/resume", async Task<IResult> (IEnumerable<ISource> sources, string sourceId, StepResponse stepResponse, CancellationToken cancellationToken) =>
-{
-    var source = sources.FirstOrDefault(s => s.Id == sourceId);
-
-    if (source == null)
-    {
-        return ValidationProblem(
-            new Dictionary<string, string[]>(),
-            "Invalid source"
-        );
-    }
-
-    var creator = source.Creator;
-
-    var resumeToken = await creator.ResumeAsync(stepResponse, cancellationToken);
-
-    return Ok(resumeToken);
-})
-    .RequireCors("AllowCredentials");
-
-app.MapPost("/sync", async (ISyncService syncService, CancellationToken cancellationToken) =>
-{
-    await syncService.FullSyncAsync(cancellationToken);
-    return NoContent();
-});
-
-app.MapPost("/sync/{sourceName}", async Task<IResult> (IEnumerable<ITransactionSource> transactionSources, string sourceName, CancellationToken cancellationToken) =>
-{
-    var transactionSource = transactionSources.FirstOrDefault(ts => ts.SourceName.Equals(sourceName, StringComparison.InvariantCultureIgnoreCase));
-
-    if (transactionSource == null)
-    {
-        return NotFound();
-    }
-
-    var accounts = await transactionSource.GetAccountsAsync(cancellationToken);
-
-    foreach (var account in accounts)
-    {
-
-    }
-
-    return NoContent();
-});
+//     return NoContent();
+// });
 
 
 
@@ -294,6 +247,7 @@ app.MapGet("/accounts", async (BankingContext bankingContext, CancellationToken 
     return ListResponse.Create(accounts);
 });
 
+app.MapSourcesEndpoints();
 app.MapSecurityEndpoints();
 
 app.Run();
@@ -302,17 +256,3 @@ record CreateJwtTokenRequest(string Name, string[] Scopes, DateTime? ExpirationD
 record CreateTokenRequest(string FullName, string Username);
 record LoginTokenRequest(string Token);
 record TransactionUpdate(string Category);
-record ListResponse<T>
-{
-    public ListResponse(List<T> data)
-    {
-        Data = data;
-    }
-
-    public int Count => Data.Count;
-    public List<T> Data { get; }
-}
-static class ListResponse
-{
-    public static ListResponse<T> Create<T>(List<T> data) => new(data);
-}
