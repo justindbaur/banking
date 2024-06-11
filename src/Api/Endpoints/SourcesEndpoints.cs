@@ -12,22 +12,22 @@ public static class SourcesEndpoints
     {
         var group = app.MapGroup("/sources");
 
-        group.MapGet("", async (ISourceRepository sourceRepository) =>
+        group.MapGet("", async (ISourceRepository sourceRepository, CancellationToken cancellationToken) =>
         {
-            var sources = await sourceRepository.GetAllAsync();
+            var sources = await sourceRepository.GetAllAsync(cancellationToken);
 
             return ListResponse.Create(sources.Select(s => new
             {
                 s.Id,
                 s.DisplayName,
                 s.Enabled,
-                s.SourceId,
+                s.SourceTemplateId,
             }).ToArray());
         });
 
-        group.MapGet("/{sourceId}", async (Guid sourceId, ISourceRepository sourceRepository, ISourceTemplateProvider sourceProvider) =>
+        group.MapGet("/{sourceId}", async (Guid sourceId, ISourceRepository sourceRepository, ISourceTemplateProvider sourceProvider, CancellationToken cancellationToken) =>
         {
-            var source = await sourceRepository.GetByIdAsync(sourceId);
+            var source = await sourceRepository.GetByIdAsync(sourceId, cancellationToken);
 
             if (source == null)
             {
@@ -37,7 +37,7 @@ public static class SourcesEndpoints
             return Ok(new
             {
                 source.Id,
-                source.SourceId,
+                source.SourceTemplateId,
                 source.DisplayName,
                 source.Enabled,
             });
@@ -50,9 +50,9 @@ public static class SourcesEndpoints
             );
         });
 
-        group.MapGet("/{sourceId}/start", async Task<IResult> (ISourceTemplateProvider sourceProvider, string sourceId, CancellationToken cancellationToken) =>
+        group.MapGet("/{sourceTemplateId}/start", async Task<IResult> (ISourceTemplateProvider sourceTemplateProvider, string sourceTemplateId, CancellationToken cancellationToken) =>
         {
-            if (!sourceProvider.TryGetSource(sourceId, out var source))
+            if (!sourceTemplateProvider.TryGetSource(sourceTemplateId, out var source))
             {
                 return ValidationProblem(
                     new Dictionary<string, string[]>(),
@@ -67,9 +67,9 @@ public static class SourcesEndpoints
             return Ok(startToken);
         });
 
-        group.MapPost("/{sourceId}/resume", async Task<IResult> (ISourceTemplateProvider sourceProvider, string sourceId, StepResponse stepResponse, ISourceRepository sourceRepository, CancellationToken cancellationToken) =>
+        group.MapPost("/{sourceTemplateId}/resume", async Task<IResult> (ISourceTemplateProvider sourceProvider, string sourceTemplateId, StepResponse stepResponse, ISourceRepository sourceRepository, CancellationToken cancellationToken) =>
         {
-            if (!sourceProvider.TryGetSource(sourceId, out var source))
+            if (!sourceProvider.TryGetSource(sourceTemplateId, out var source))
             {
                 return ValidationProblem(
                     new Dictionary<string, string[]>(),
@@ -96,14 +96,14 @@ public static class SourcesEndpoints
 
         group.MapGet("{sourceId}/accounts", async Task<IResult> (ISourceTemplateProvider sourceProvider, ISourceRepository sourceRepository, Guid sourceId, CancellationToken cancellationToken) =>
         {
-            var source = await sourceRepository.GetByIdAsync(sourceId);
+            var source = await sourceRepository.GetByIdAsync(sourceId, cancellationToken);
 
             if (source == null)
             {
                 return NotFound();
             }
 
-            if (!sourceProvider.TryGetSource(source.SourceId, out var sourceTemplate))
+            if (!sourceProvider.TryGetSource(source.SourceTemplateId, out var sourceTemplate))
             {
                 return ValidationProblem(
                     new Dictionary<string, string[]>(),

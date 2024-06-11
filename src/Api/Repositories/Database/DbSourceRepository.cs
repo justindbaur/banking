@@ -18,7 +18,7 @@ public class DbSourceRepository : ISourceRepository
     {
         var newSource = new Source
         {
-            SourceId = createSource.SourceId,
+            SourceTemplateId = createSource.SourceId,
             Config = createSource.Config,
             Enabled = true,
             DisplayName = null,
