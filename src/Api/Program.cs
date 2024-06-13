@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Security.Claims;
 using Banking.Abstractions.Entities;
 using Banking.Api.Authentication;
@@ -5,6 +6,7 @@ using Banking.Api.Authorization;
 using Banking.Api.Endpoints;
 using Banking.Api.Repositories;
 using Banking.Api.Repositories.Database;
+using Banking.Api.Repositories.Yaml;
 using Banking.Api.Services;
 using Banking.Api.Services.Implementations;
 using Banking.Api.Utilities;
@@ -79,7 +81,25 @@ builder.Services.AddAuthorization(b =>
 });
 
 builder.Services.AddScoped<IUserStore<User>, UserStore>();
-builder.Services.AddScoped<ISourceRepository, DbSourceRepository>();
+
+builder.Services.Configure<BankingOptions>(options =>
+{
+    options.RootConfigDirectory = Path.Combine(builder.Configuration["contentRoot"]!, "config");
+});
+
+var useYamlRepos = builder.Configuration.GetValue("USE_YAML_REPOS", true);
+
+// TODO: Make this user-choosable
+if (useYamlRepos)
+{
+    builder.Services.AddSingleton<IYamlRepositoryProvider, YamlRepositoryProvider>();
+
+    builder.Services.AddSingleton<ISourceRepository, YamlSourceRepository>();
+}
+else
+{
+    builder.Services.AddScoped<ISourceRepository, DbSourceRepository>();
+}
 
 builder.Services.AddSingleton<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 

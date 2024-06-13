@@ -18,7 +18,7 @@ public class DbSourceRepository : ISourceRepository
     {
         var newSource = new Source
         {
-            SourceTemplateId = createSource.SourceId,
+            SourceTemplateId = createSource.SourceTemplateId,
             Config = createSource.Config,
             Enabled = true,
             DisplayName = null,
@@ -30,13 +30,13 @@ public class DbSourceRepository : ISourceRepository
         return newSource.Id;
     }
 
-    public async Task<IReadOnlyCollection<Source>> GetAllAsync()
+    public async Task<IReadOnlyCollection<Source>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await _bankingContext.Sources.ToListAsync();
+        return await _bankingContext.Sources.ToListAsync(cancellationToken);
     }
 
-    public async Task<Source?> GetByIdAsync(Guid id)
+    public async Task<Source?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _bankingContext.Sources.FindAsync(id);
+        return await _bankingContext.Sources.FindAsync([id], cancellationToken);
     }
 }

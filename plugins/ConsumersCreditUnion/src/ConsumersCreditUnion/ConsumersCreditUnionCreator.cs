@@ -231,6 +231,8 @@ public class ConsumersCreditUnionCreator : ICreator
         return ResumeToken.Complete(JsonSerializer.Deserialize<JsonDocument>(new JsonObject
         {
             ["accessToken"] = accessTokenElement.GetString(),
+            // TODO: Validate this?
+            ["deviceId"] = stateDocument.RootElement.GetProperty("DeviceId").GetGuid()
         })!);
     }
 

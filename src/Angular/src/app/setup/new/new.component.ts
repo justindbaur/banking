@@ -41,7 +41,7 @@ export class NewComponent {
   displayedColumns = ['name', 'action'];
 
   sources$: Observable<Source[]> = this.httpClient
-    .get<ListResponse<Source>>(`${this.baseUrl}/sources/template`, {
+    .get<ListResponse<Source>>(`${this.baseUrl}/sources/templates`, {
       withCredentials: true,
     })
     .pipe(map((r) => r.data));

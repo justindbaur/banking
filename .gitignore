@@ -528,3 +528,5 @@ testem.log
 .DS_Store
 Thumbs.db
 **/environment.development.ts
+
+src/Api/config/
