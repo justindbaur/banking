@@ -228,12 +228,12 @@ public class ConsumersCreditUnionCreator : ICreator
             throw new Exception("Did not receive the access token");
         }
 
-        return ResumeToken.Complete(JsonSerializer.Deserialize<JsonDocument>(new JsonObject
+        return ResumeToken.Complete(new JsonObject
         {
             ["accessToken"] = accessTokenElement.GetString(),
             // TODO: Validate this?
-            ["deviceId"] = stateDocument.RootElement.GetProperty("DeviceId").GetGuid()
-        })!);
+            ["deviceId"] = stateDocument.RootElement.GetProperty("DeviceId").GetGuid(),
+        });
     }
 
     public async Task<StartToken> StartAsync(CancellationToken cancellationToken = default)

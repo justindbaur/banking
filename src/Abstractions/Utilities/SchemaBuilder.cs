@@ -40,11 +40,11 @@ public class SchemaBuilder
         return this;
     }
 
-    public JsonDocument Build()
+    public JsonObject Build()
     {
-        return JsonSerializer.SerializeToDocument(new
+        return new JsonObject
         {
-            inputs = _inputs,
-        });
+            ["inputs"] = _inputs,
+        };
     }
 }
