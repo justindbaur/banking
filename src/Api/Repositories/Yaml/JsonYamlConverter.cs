@@ -5,6 +5,8 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
+namespace Banking.Api.Repositories.Yaml;
+
 public class JsonYamlConverter : IYamlTypeConverter
 {
     public bool Accepts(Type type)

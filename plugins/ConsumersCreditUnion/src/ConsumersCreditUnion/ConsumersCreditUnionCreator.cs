@@ -242,6 +242,11 @@ public class ConsumersCreditUnionCreator : ICreator
         return new StartToken(schema, SetState(new { Step = 0 }));
     }
 
+    public Task<AuthenticationStatus> GetStatusAsync(JsonDocument config)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<JsonDocument> ReadSchemaAsync(string name, CancellationToken cancellationToken)
     {
         var thisAssembly = Assembly.GetAssembly(GetType());

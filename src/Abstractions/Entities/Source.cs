@@ -8,5 +8,6 @@ public record Source
     public required string SourceTemplateId { get; init; }
     public string? DisplayName { get; init; }
     public required JsonDocument Config { get; init; }
+    public DateTimeOffset LastUsed { get; set; }
     public bool Enabled { get; init; }
 }

@@ -21,7 +21,8 @@ public class DbSourceRepository : ISourceRepository
             SourceTemplateId = createSource.SourceTemplateId,
             Config = createSource.Config,
             Enabled = true,
-            DisplayName = null,
+            DisplayName = createSource.DisplayName,
+            LastUsed = DateTimeOffset.UtcNow,
         };
 
         _bankingContext.Sources.Add(newSource);

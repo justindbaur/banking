@@ -32,11 +32,13 @@ public class YamlRepositoryProvider : IYamlRepositoryProvider
         _serializer = new SerializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .WithTypeConverter(new JsonYamlConverter())
+            .WithTypeConverter(new DateTimeOffsetYamlConverter())
             .Build();
 
         _deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .WithTypeConverter(new JsonYamlConverter())
+            .WithTypeConverter(new DateTimeOffsetYamlConverter())
             .Build();
     }
 

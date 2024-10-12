@@ -19,6 +19,11 @@ export type Source = {
 
 export type SourceAccount = {
   id: string;
+  accountId: string;
+  name: string;
+  balance: number;
+  enabled: boolean;
+  extraInfo: unknown;
 };
 
 @Injectable()
