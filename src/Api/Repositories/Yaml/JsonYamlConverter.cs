@@ -11,12 +11,21 @@ public class JsonYamlConverter : IYamlTypeConverter
 {
     public bool Accepts(Type type)
     {
-        return type == typeof(JsonDocument) || type == typeof(JsonElement);
+        return type == typeof(JsonDocument) ||
+            type == typeof(JsonElement) ||
+            type.IsAssignableTo(typeof(JsonNode));
     }
 
     public object? ReadYaml(IParser parser, Type type)
     {
         var jsonNode = ReadYamlCore(parser);
+
+        if (type.IsAssignableTo(typeof(JsonNode)))
+        {
+            // Do we need to merge this into the upper type?
+            return jsonNode;
+        }
+
         var jsonDocument = JsonSerializer.SerializeToDocument(jsonNode);
         return type == typeof(JsonDocument)
             ? jsonDocument
@@ -34,7 +43,7 @@ public class JsonYamlConverter : IYamlTypeConverter
     
             return JsonNode.Parse(scalar.Value);
         }
-        else if (parser.TryConsume<MappingStart>(out var mappingStart))
+        else if (parser.TryConsume<MappingStart>(out _))
         {
             var jsonObject = new JsonObject();
             while (parser.TryConsume<Scalar>(out var propertyScalar))
@@ -80,9 +89,17 @@ public class JsonYamlConverter : IYamlTypeConverter
 
     public void WriteYaml(IEmitter emitter, object? value, Type type)
     {
-        var jsonElement = value is JsonDocument jsonDocument
-            ? jsonDocument.RootElement
-            : (JsonElement)value!;
+        JsonElement jsonElement;
+        if (value is JsonNode jsonNode)
+        {
+            jsonElement = jsonNode.Deserialize<JsonElement>();
+        }
+        else
+        {
+            jsonElement = value is JsonDocument jsonDocument
+                ? jsonDocument.RootElement
+                : (JsonElement)value!;
+        }
 
         switch (jsonElement.ValueKind)
         {
