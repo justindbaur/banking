@@ -108,27 +108,24 @@ public class ConsumersCreditUnionCreator : ICreator
 
     private async Task<ResumeToken> DoLoginAsync(StepResponse stepResponse, CancellationToken cancellationToken)
     {
-        var answers = stepResponse.Answers.RootElement;
+        var answers = stepResponse.Answers;
 
-        if (answers.ValueKind != JsonValueKind.Object)
+        // TODO: This does not validate string, it should
+        if (!answers.TryGetPropertyValue("username", out var usernameNode) || usernameNode == null)
         {
-            throw new ArgumentException("Answers was expected to be an object.");
+            throw new ArgumentException("Expected a username property of type string.");            
         }
 
-        if (!answers.TryGetProperty("username", out var usernameElement) || usernameElement.ValueKind != JsonValueKind.String)
-        {
-            throw new ArgumentException("Expected a username property of type string.");
-        }
-
-        if (!answers.TryGetProperty("password", out var passwordElement) || passwordElement.ValueKind != JsonValueKind.String)
+        // TODO: This does not validate string, it should
+        if (!answers.TryGetPropertyValue("password", out var passwordNode) || passwordNode == null)
         {
             throw new ArgumentException("Expected a password property of type string.");
         }
 
         var deviceId = Guid.NewGuid();
 
-        var response = await _httpClient.PostAsJsonAsync<AuthLoginRequest>("auth/login",
-            new AuthLoginRequest(deviceId, usernameElement.GetString()!, passwordElement.GetString()!),
+        var response = await _httpClient.PostAsJsonAsync("auth/login",
+            new AuthLoginRequest(deviceId, usernameNode.GetValue<string>(), passwordNode.GetValue<string>()),
             cancellationToken
         );
 
@@ -160,7 +157,7 @@ public class ConsumersCreditUnionCreator : ICreator
                 }));
             }
 
-            // Offer up all options
+            // TODO: Offer up all options
             throw new NotImplementedException("MFA is required but authenticator code was not an option.");
         }
 
@@ -179,18 +176,19 @@ public class ConsumersCreditUnionCreator : ICreator
             throw new ArgumentException("A device id should have been saved in the state.");
         }
 
-        if (!stepResponse.Answers.RootElement.TryGetProperty("code", out var codeElement) || codeElement.ValueKind != JsonValueKind.String)
+        // TODO: Validate that it's a string
+        if (!stepResponse.Answers.TryGetPropertyValue("code", out var codeNode) || codeNode == null)
         {
             throw new ArgumentException("A code answer was expected");
         }
 
         // resultCode property should be OK
-        var response = await _httpClient.PostAsJsonAsync("auth/validatePreAuthOtp/GOOGLE_AUTH", new
+        var response = await _httpClient.PostAsJsonAsync("auth/validatePreAuthOtp/GOOGLE_AUTH", new JsonObject
         {
-            deviceId = deviceIdElement.GetGuid(),
-            eventType = "WEB_LOGIN",
-            otp = codeElement.GetString(),
-        });
+            ["deviceId"] = deviceIdElement.GetGuid(),
+            ["eventType"] = "WEB_LOGIN",
+            ["otp"] = codeNode.GetValue<string>(),
+        }, cancellationToken);
 
         response.EnsureSuccessStatusCode();
 
@@ -212,7 +210,7 @@ public class ConsumersCreditUnionCreator : ICreator
         }
 
         // access_token property
-        response = await _httpClient.PostAsJsonAsync<object?>("auth/stepUpLogin", new JsonObject(), cancellationToken);
+        response = await _httpClient.PostAsJsonAsync("auth/stepUpLogin", new JsonObject(), cancellationToken);
 
         response.EnsureSuccessStatusCode();
 

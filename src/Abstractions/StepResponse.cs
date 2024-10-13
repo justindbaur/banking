@@ -1,15 +1,16 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Banking.Abstractions;
 
 public class StepResponse
 {
-    public StepResponse(JsonDocument answers, string? state)
+    public StepResponse(JsonObject answers, string? state)
     {
         Answers = answers;
         State = state;
     }
 
-    public JsonDocument Answers { get; }
+    public JsonObject Answers { get; }
     public string? State { get; }
 }
