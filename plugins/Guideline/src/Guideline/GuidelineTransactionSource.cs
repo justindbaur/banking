@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Banking.Abstractions.Entities;
 using Microsoft.Extensions.Options;
 
@@ -18,14 +19,14 @@ public class GuidelineTransactionSource : ITransactionSource
         _jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
     }
 
-    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonDocument configuration, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonNode configuration, CancellationToken cancellationToken)
     {
 
 
         throw new Exception("Testing");
     }
 
-    public Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonDocument configuration, Account account, CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonNode configuration, Account account, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

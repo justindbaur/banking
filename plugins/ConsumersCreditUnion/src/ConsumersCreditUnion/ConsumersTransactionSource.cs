@@ -30,7 +30,7 @@ internal class ConsumersTransactionSource : ITransactionSource
 
     public string SourceName => "ConsumersCreditUnion";
 
-    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonDocument configuration, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Account>> GetAccountsAsync(JsonNode configuration, CancellationToken cancellationToken)
     {
         var config = ParseConfig(configuration);
 
@@ -58,7 +58,7 @@ internal class ConsumersTransactionSource : ITransactionSource
         }).ToArray();
     }
 
-    public async Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonDocument configuration, Account account, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Transaction>> GetAccountTransactionsAsync(JsonNode configuration, Account account, CancellationToken cancellationToken)
     {
         var config = ParseConfig(configuration);
         var request = new HttpRequestMessage(HttpMethod.Post, $"gateway/web/exportTransactions/{account.AccountId}")
@@ -109,7 +109,7 @@ internal class ConsumersTransactionSource : ITransactionSource
         return transactions;
     }
 
-    private static ConsumersCreditUnionConfig ParseConfig(JsonDocument jsonDocument)
+    private static ConsumersCreditUnionConfig ParseConfig(JsonNode jsonDocument)
     {
         var config = jsonDocument.Deserialize<ConsumersCreditUnionConfig>();
 

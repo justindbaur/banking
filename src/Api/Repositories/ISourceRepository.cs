@@ -1,9 +1,10 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Banking.Abstractions.Entities;
 
 namespace Banking.Api.Repositories;
 
-public record CreateSource(string SourceTemplateId, string DisplayName, JsonDocument Config);
+public record CreateSource(string SourceTemplateId, string DisplayName, JsonNode Config);
 
 public interface ISourceRepository
 {

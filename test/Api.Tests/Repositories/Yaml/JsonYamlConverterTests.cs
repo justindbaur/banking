@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Banking.Api.Repositories.Yaml;
 using YamlDotNet.Serialization;
 
 namespace Banking.Api.Tests.Repositories.Yaml;
